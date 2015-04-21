@@ -39,18 +39,14 @@ public:
      * @return 
      */
     template<unsigned int DIM>
-    Particle<DIM>* getParticle() {
-        return (Particle<DIM>*)(((char*)this) - offsetof(Particle<DIM>,nextEvent));
-    }
+    Particle<DIM>* getParticle();
     
     /**
      * This function is potentially evil. Only call this on events ACTUALLY within a particle.
      * @return 
      */
     template<unsigned int DIM>
-    const Particle<DIM> * getParticle() const {
-        return (const Particle<DIM>*)(((char*)this) - offsetof(Particle<DIM>,nextEvent));
-    }
+    const Particle<DIM> * getParticle() const;
 };
 
 namespace std {
