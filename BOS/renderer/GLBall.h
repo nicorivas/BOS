@@ -8,6 +8,8 @@
 #ifndef GLBALL_H
 #define	GLBALL_H
 
+#include <physics/Particle.h>
+
 #include <GL/glew.h>
 #include <cmath>
 
@@ -23,7 +25,7 @@ struct GLTriangle {
 
 class GLBall {
     GLuint vao;
-    GLuint vbo[2];
+    GLuint vbo[3];
     GLuint size;
     
     std::vector<GLVertex> vertices;
@@ -84,7 +86,7 @@ public:
     
     ~GLBall() {
         glDeleteVertexArrays(1, &vao);
-        glDeleteBuffers(2, vbo);
+        glDeleteBuffers(3, vbo);
     }
     
     void subdivide(unsigned int level) {
@@ -134,10 +136,10 @@ public:
         }
     }
     
-    void compile() {
+    void compile(bool instanced = true) {
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
-        glGenBuffers(2, vbo);
+        glGenBuffers(3, vbo);
         
         glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLVertex), vertices.data(), GL_STATIC_DRAW);
@@ -148,13 +150,28 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLTriangle), indices.data(), GL_STATIC_DRAW);
         size = indices.size();
+        
+        if (instanced) {
+          glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+          Particle<3>::defineVertexAttributePointers();
+        }
+        
         glBindVertexArray(0);
     }
     
     void render() {
         glBindVertexArray(vao);
-        
         glDrawElements(GL_TRIANGLES, size*3, GL_UNSIGNED_INT, (void*)0);
+        glBindVertexArray(0);
+    }
+    
+    void renderInstanced(const std::vector<Particle<3>>& particles) {
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+        glBufferData(GL_ARRAY_BUFFER, particles.size() * sizeof(Particle<3>), particles.data(), GL_DYNAMIC_DRAW);
+        
+        glDrawElementsInstanced(GL_TRIANGLES, size*3, GL_UNSIGNED_INT, (void*)0, particles.size());
+        glBindVertexArray(0);
     }
     
     

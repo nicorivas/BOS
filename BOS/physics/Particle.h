@@ -11,6 +11,10 @@
 #include <math/Vector.h>
 #include <math/Line.h>
 
+#ifndef NO_TOOLS
+#include <GL/glew.h>
+#endif
+
 template < unsigned int DIM >
 class Particle
 {
@@ -83,7 +87,22 @@ public:
     Line<DIM> getTrajectory() const {
         return {position, velocity};
     }
-    
+#ifndef NO_TOOLS
+    static void defineVertexAttributePointers() {
+        glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
+        
+        glVertexAttribDivisor(2, 1); //Tell that these arrays are instanced!
+        glVertexAttribDivisor(3, 1);
+        glVertexAttribDivisor(4, 1);
+        
+        glVertexAttribPointer(2, 3, GL_DOUBLE, false, sizeof(Particle<DIM>), (void*)offsetof(Particle<DIM>,velocity));
+        glVertexAttribPointer(3, 3, GL_DOUBLE, false, sizeof(Particle<DIM>), (void*)offsetof(Particle<DIM>,position));
+        glVertexAttribPointer(4, 1, GL_DOUBLE, false, sizeof(Particle<DIM>), (void*)offsetof(Particle<DIM>,radius));
+        
+    }
+#endif
 };
 
 template< unsigned int DIM >
