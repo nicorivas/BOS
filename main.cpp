@@ -160,7 +160,15 @@ int main(int argc, char** argv) {
     glfwSetCursorPosCallback(win, cursorFunc);
     
     ball.subdivide(3);
-    ball.compile();
+    ball.compile(true);
+    
+    std::vector<Particle<3>> vec;
+    vec.reserve(4);
+    vec.emplace_back(0, Vector<3>{0 ,0 ,0}, Vector<3>{1,0,0}, 0.1, 0);
+    vec.emplace_back(0, Vector<3>{-1,0 ,0}, Vector<3>{.5,0,0}, 0.2, 0);
+    vec.emplace_back(0, Vector<3>{-1,-1,0}, Vector<3>{0,.5,0}, 0.2, 0);
+    vec.emplace_back(0, Vector<3>{0 ,-1,0}, Vector<3>{0,1,0}, 0.1, 0);
+    
 
     while (!glfwWindowShouldClose(win)) {
 
@@ -170,7 +178,7 @@ int main(int argc, char** argv) {
         cam.move(movedir);
 
         cam.render();
-        ball.render();
+        ball.renderInstanced(vec);
         
         glfwSwapBuffers(win);
         glfwPollEvents();
