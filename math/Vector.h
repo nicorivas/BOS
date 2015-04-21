@@ -71,6 +71,10 @@ public:
         return (*this += -v);
     }
     
+    Vector<DIM>& operator/=(double d) {
+        return *this *= (1.0/d);
+    }
+    
     Vector<DIM> operator-() {
         Vector<DIM> retVal = *this;
         retVal *= -1;

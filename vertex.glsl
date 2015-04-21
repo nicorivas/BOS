@@ -14,5 +14,5 @@ void main()
 {
   gl_Position = MVP * vec4(vpos * objradius + objpos, 1.0f);
   normal_pass = vpos;
-  color_pass = objcolor;
+  color_pass = vec3(sqrt(length(objcolor)), 0.5, 0.5);
 }

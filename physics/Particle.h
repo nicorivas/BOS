@@ -20,7 +20,12 @@
 template < unsigned int DIM >
 class Particle
 {
-private:
+    template<unsigned int D2>
+    friend class Simulation;
+    
+    friend class Event;
+//private:
+    public:
     int id;
     double localTime;
 
@@ -101,7 +106,11 @@ public:
         localTime += t;
     }
     
-    Event getNextEvent() const {
+    const Event& getNextEvent() const {
+        return nextEvent;
+    }
+    
+    Event& getNextEvent() {
         return nextEvent;
     }
     
