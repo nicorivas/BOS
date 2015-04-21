@@ -187,7 +187,7 @@ public:
     }
     
 private:
-    void findNextEvent(Particle& p1) {
+    void findNextEvent(Particle<DIM>& p1) {
         Line<DIM> tr1 = p1.getTrajectory();
         for (std::size_t j = 0; j < walls.size(); j++) {
             double t = intersection(tr1, walls[j], p1.getRadius(), p1.getLocalTime());
@@ -200,7 +200,7 @@ private:
             }
         }
         
-        Event smallestEvent;
+        Event smallestEvent = p1.getNextEvent();
         for (std::size_t i = 0; i < particles.size(); i++) {
             Particle<DIM>& p2 = particles[i];
             if (p1.getID() == i)
@@ -209,6 +209,14 @@ private:
             double t = intersection(tr1, p2.getTrajectory(),
                                     (p1.getRadius() + p2.getRadius()) / 2.0,
                                     p1.getLocalTime() - p2.getLocalTime());
+            if (t < smallestEvent.time && t < p2.getNextEvent().time) {
+                smallestEvent.otherIdx = i;
+                smallestEvent.time = i;
+                smallestEvent.type = EventType::PARTICLE_COLLISION;
+            }
+        }
+        if (smallestEvent.type == EventType::PARTICLE_COLLISION) {
+            Particle<DIM>& p2 = particles[smallestEvent.otherIdx];
         }
     }
     void initialPopulateEvents() {
