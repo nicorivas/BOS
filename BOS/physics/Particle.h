@@ -11,6 +11,8 @@
 #include <math/Vector.h>
 #include <math/Line.h>
 
+#include <physics/Event.h>
+
 #ifndef NO_TOOLS
 #include <GL/glew.h>
 #endif
@@ -25,6 +27,8 @@ private:
     Vector<DIM> position;
     Vector<DIM> velocity;
     double radius;
+    
+    Event nextEvent;
 public:
 
     Particle(int id, Vector<DIM> position, Vector<DIM> velocity, double radius, double time = 0)
@@ -87,6 +91,24 @@ public:
     Line<DIM> getTrajectory() const {
         return {position, velocity};
     }
+    
+    /**
+     * Advances the particle by time t
+     * @param t time to advance by
+     */
+    void advance(double t) {
+        position += velocity * t;
+        localTime += t;
+    }
+    
+    Event getNextEvent() const {
+        return nextEvent;
+    }
+    
+    void setNextEvent(Event evt) {
+        nextEvent = evt;
+    }
+    
 #ifndef NO_TOOLS
     static void defineVertexAttributePointers() {
         glEnableVertexAttribArray(2);

@@ -49,12 +49,28 @@ double intersection(Line<DIM> l, Plane<DIM> plane, double d) {
     return t > 0.0 ? t : 0.0;
 }
 
+/**
+ * Returns the time at which the first line hits the seconds, while being able
+ * to deal with a difference in timeframe. Timeframe is relative from the second
+ * line to the first line:
+ * line1 (t=0.1): (0,0) - (1,0)
+ * line2 (t=1.1): (1,-2)- (0, 1)
+ * with d = infinitely small, leads to the call:
+ * 
+ * 1 = intersection(line1, line2, 0.0000001, -1)
+ * @param line The first line (this timeframe)
+ * @param otherLine The second line (this timeframe + dt)
+ * @param d Distance between them which is allowed
+ * @param dt Difference in timebase
+ * @return Time relative to the first line
+ */
 template< unsigned int DIM >
-double intersection(Line<DIM> line, Line<DIM> otherLine, double d) {
-    //TODO: Can we optimise this? Check the math?
+double intersection(Line<DIM> line, Line<DIM> otherLine, double d, double dt) {
+    //TODO: I HATE THE SQUARE ROOT!!!!!
+    //Therefore, can we work with square time instead?
     
     // first, we translate into the frame of the first particle
-    Vector<DIM> positionRel = otherLine.getOrig() - line.getOrig();
+    Vector<DIM> positionRel = otherLine.getOrig() - line.getOrig() + otherLine.getDir()*dt;
     Vector<DIM> velocityRel = otherLine.getDir()  - line.getDir();
     
     //q, = quadratic! :D So, we're solving something similar to qa*x^2 + qb*x + qc = 0;
