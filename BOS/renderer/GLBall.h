@@ -49,6 +49,13 @@ public:
         vertices.emplace_back(-t,  0, -1);
         vertices.emplace_back(-t,  0,  1);
         
+        double len;
+        for (GLVertex& x: vertices) {
+            len = std::sqrt(x.x*x.x + x.y*x.y + x.z*x.z);
+            x.x /= len; x.y /= len; x.z /= len;
+        }
+        
+        
         //hahaha... and we're just getting started =D
         indices.emplace_back(0, 11, 5);
         indices.emplace_back(0, 5, 1);
@@ -78,6 +85,53 @@ public:
     ~GLBall() {
         glDeleteVertexArrays(1, &vao);
         glDeleteBuffers(2, vbo);
+    }
+    
+    void subdivide(unsigned int level) {
+        for (unsigned int i = 0; i < level; i++) {
+            std::vector<GLTriangle> newIndices;
+            newIndices.reserve(4*indices.size());
+            for(std::size_t i = 0; i < indices.size(); i++) {
+                GLuint a, b, c; //Triangle by newly appended indices A, B, C
+                
+                GLTriangle tr = indices[i];
+                GLVertex x ={(vertices[tr.a].x + vertices[tr.b].x) / 2.0f,
+                             (vertices[tr.a].y + vertices[tr.b].y) / 2.0f,
+                             (vertices[tr.a].z + vertices[tr.b].z) / 2.0f};
+                
+                GLVertex y ={(vertices[tr.b].x + vertices[tr.c].x) / 2.0f,
+                             (vertices[tr.b].y + vertices[tr.c].y) / 2.0f,
+                             (vertices[tr.b].z + vertices[tr.c].z) / 2.0f};
+                
+                GLVertex z ={(vertices[tr.a].x + vertices[tr.c].x) / 2.0f,
+                             (vertices[tr.a].y + vertices[tr.c].y) / 2.0f,
+                             (vertices[tr.a].z + vertices[tr.c].z) / 2.0f};
+                
+                double len;
+                
+                len = std::sqrt(x.x*x.x + x.y*x.y + x.z*x.z);
+                x.x /= len; x.y /= len; x.z /= len;
+                
+                len = std::sqrt(y.x*y.x + y.y*y.y + y.z*y.z);
+                y.x /= len; y.y /= len; y.z /= len;
+                
+                len = std::sqrt(z.x*z.x + z.y*z.y + z.z*z.z);
+                z.x /= len; z.y /= len; z.z /= len;
+                
+                a = vertices.size();
+                vertices.push_back(x);
+                b = vertices.size();
+                vertices.push_back(y);
+                c = vertices.size();
+                vertices.push_back(z);
+                
+                newIndices.emplace_back(tr.a, a, c);
+                newIndices.emplace_back(tr.b, b, a);
+                newIndices.emplace_back(tr.c, c, b);
+                newIndices.emplace_back(a, b, c);
+            }
+            indices = newIndices;
+        }
     }
     
     void compile() {

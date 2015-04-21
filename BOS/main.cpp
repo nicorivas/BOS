@@ -159,6 +159,7 @@ int main(int argc, char** argv) {
     glfwSetKeyCallback(win, keyFunc);
     glfwSetCursorPosCallback(win, cursorFunc);
     
+    ball.subdivide(3);
     ball.compile();
 
     while (!glfwWindowShouldClose(win)) {
