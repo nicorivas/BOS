@@ -18,6 +18,9 @@
 #include "renderer/Camera.h"
 #include "renderer/GLBall.h"
 
+#include <chrono>
+#include <thread>
+
 using namespace std;
 
 static Camera cam;
@@ -162,14 +165,44 @@ int main(int argc, char** argv) {
     ball.subdivide(3);
     ball.compile(true);
     
-    std::vector<Particle<3>> vec;
-    vec.reserve(4);
-    vec.emplace_back(0, Vector<3>{0 ,0 ,0}, Vector<3>{1,0,0}, 0.1, 0);
-    vec.emplace_back(0, Vector<3>{-1,0 ,0}, Vector<3>{.5,0,0}, 0.2, 0);
-    vec.emplace_back(0, Vector<3>{-1,-1,0}, Vector<3>{0,.5,0}, 0.2, 0);
-    vec.emplace_back(0, Vector<3>{0 ,-1,0}, Vector<3>{0,1,0}, 0.1, 0);
+    Simulation<3> sim(0.10, 10);
+    sim.addWall({{-1,-1,-1},{1,0,0}});
+    sim.addWall({{-1,-1,-1},{0,1,0}});
+    sim.addWall({{-1,-1,-1},{0,0,1}});
+    sim.addWall({{1,1,1},{-1, 0, 0}});
+    sim.addWall({{1,1,1},{ 0,-1, 0}});
+    sim.addWall({{1,1,1},{ 0, 0,-1}});
     
+    sim.addParticle({0, {0.2, 0.2, -0.2}, {0.4, 0, 0.2}, 0.05, 0});
+    sim.addParticle({0, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});
+    cam.move({-0.5, -0.5, -1});
+    int funcNum = sim.addFunction([&](Simulation<3>& sim) {
+        std::cout << "CALLBACK!" << std::endl;
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
+        cam.move(movedir);
 
+        cam.render();
+        std::cout << sim.getLastEvenTime()<< std::endl;
+        sim.synchronise();
+        ball.renderInstanced(sim.getParticles());
+        sim.queueFunction(0,sim.getLastEvenTime() + 0.01);
+        
+        glfwSwapBuffers(win);
+        glfwPollEvents();
+        
+        if (glfwWindowShouldClose(win)) {
+            glfwDestroyWindow(win);
+            glfwTerminate();
+            std::exit(0);
+        }
+    });
+    sim.queueFunction(funcNum,0.01);
+    sim.run();
+    
+    /*
     while (!glfwWindowShouldClose(win)) {
 
         // clear the buffers
@@ -178,7 +211,7 @@ int main(int argc, char** argv) {
         cam.move(movedir);
 
         cam.render();
-        ball.renderInstanced(vec);
+       // ball.renderInstanced(vec);
         
         glfwSwapBuffers(win);
         glfwPollEvents();
@@ -186,7 +219,7 @@ int main(int argc, char** argv) {
     glfwDestroyWindow(win);
 
     glfwTerminate();
-    
+    */
 
     return 0;
 }

@@ -21,9 +21,9 @@
  * @return the distance to get to the intersection, viewed from the line
  */
 template< unsigned int DIM >
-double intersection(Line<DIM> l, Plane<DIM> plane, double d) {
+double intersection(Line<DIM> l, Plane<DIM> plane, double d, double dt) {
     // first, we use a translation such that the plane is on the origin
-    Vector<DIM> lineInPlaneSpace = l.getOrig() - plane.getPoint();
+    Vector<DIM> lineInPlaneSpace = l.getOrig() + l.getDir() * dt - plane.getPoint();
     
     // we project the origin of the line onto the normal of the plane (distance)
     double lineDist =   dot(lineInPlaneSpace, plane.getNormal());
