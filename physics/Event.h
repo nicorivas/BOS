@@ -49,6 +49,38 @@ public:
     const Particle<DIM> * getParticle() const;
 };
 
+std::ostream& operator<<(std::ostream& os, const Event& evt) {
+    os << "Event {.type=";
+    switch(evt.type) {
+        case EventType::PARTICLE_COLLISION:
+            os << 'P';
+            break;
+        case EventType::WALL_COLLISION:
+            os << 'W';
+            break;
+        case EventType::CELL_BOUNDARY:
+            os << 'C';
+            break;
+        case EventType::INVALID:
+            os << 'I';
+            break;
+        case EventType::FUNC_EVALUATION:
+            os << 'F';
+            break;
+        case EventType::SYNC_RESCALE:
+            os << 'S';
+            break;
+    }
+    if (   evt.type != EventType::CELL_BOUNDARY 
+        && evt.type != EventType::INVALID
+        && evt.type != EventType::SYNC_RESCALE) {
+        os << " .id=" << evt.otherIdx;
+    }
+    
+    os << " .t=" << evt.time << "}";
+    return os;
+}
+
 namespace std {
     template<>
     struct less<Event*> {

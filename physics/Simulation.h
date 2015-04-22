@@ -12,9 +12,11 @@
 #include <math/Line.h>
 #include <physics/Wall.h>
 
+#include <PriorityQueue.h>
+
 #include <vector>
 #include <functional>
-#include <queue>
+//#include <queue>
 #include <set>
 
 template < unsigned int DIM >
@@ -32,7 +34,7 @@ private:
     
     double mostRecentEvent;
     
-    std::priority_queue<Event*> eventQueue;
+    PriorityQueue<Event*> eventQueue;
     std::set<Event*> unownedEvents;
     Event rescaleEvent;
 public:
@@ -129,9 +131,17 @@ public:
         initialPopulateEvents();
         
         while (mostRecentEvent < endTime) {
+            for (Particle<DIM>& p : particles) {
+                std::cout << p << std::endl;
+            }
+            
             Event* evt = eventQueue.top(); eventQueue.pop();
             mostRecentEvent = evt->time + globalTime;
+            std::cout << "Processing: " << *evt << std::endl;
             std::cout << mostRecentEvent << " - " << globalTime << " - " << endTime << std::endl;
+            
+            std::cout << "\n--------- Event List ----------\n";
+            
             switch (evt->type) {
                 case EventType::PARTICLE_COLLISION:
                 {
@@ -189,6 +199,7 @@ public:
 private:
     void findNextEvent(Particle<DIM>& p1) {
         Line<DIM> tr1 = p1.getTrajectory();
+        //Find wall intersections first, they are less work
         for (std::size_t j = 0; j < walls.size(); j++) {
             double t = intersection(tr1, walls[j], p1.getRadius(), p1.getLocalTime());
             if (t < p1.getNextEvent().time) {
@@ -200,6 +211,7 @@ private:
             }
         }
         
+        //Yes? No?
         Event smallestEvent = p1.getNextEvent();
         for (std::size_t i = 0; i < particles.size(); i++) {
             Particle<DIM>& p2 = particles[i];
@@ -215,8 +227,43 @@ private:
                 smallestEvent.type = EventType::PARTICLE_COLLISION;
             }
         }
+        
+        
         if (smallestEvent.type == EventType::PARTICLE_COLLISION) {
             Particle<DIM>& p2 = particles[smallestEvent.otherIdx];
+            //Ah shit, the other particle already has a collision scheduled,
+            //so we're just going to cancel that stuff
+            
+            p1.setNextEvent(smallestEvent);
+            if (p2.getNextEvent().type == EventType::PARTICLE_COLLISION) {
+                Particle<DIM>& cancelledPartner = particles[p2.getNextEvent().otherIdx];
+                
+                //Who owned the event? (answer: smallest ID)
+                Event* pEvent = (p2.getID() < cancelledPartner.getID())
+                                 ? &p2.getNextEvent() : &cancelledPartner.getNextEvent();
+                
+                //BOOM! GONE!
+                eventQueue.erase(pEvent);
+                
+                smallestEvent.otherIdx = p1.getID();
+                p2.setNextEvent(smallestEvent);
+                
+                cancelledPartner.setNextEvent({});
+                
+                //Now, sort out that mess!
+                findNextEvent(cancelledPartner);
+                
+            } else {
+                smallestEvent.otherIdx = p1.getID();
+                p2.setNextEvent(smallestEvent);
+            }
+            
+            if (p1.getID() < p2.getID()) {
+                eventQueue.push(&p1.getNextEvent());
+            } else {
+                eventQueue.push(&p2.getNextEvent());
+            }
+            
         }
     }
     void initialPopulateEvents() {
@@ -267,7 +314,7 @@ private:
         for (Particle<DIM>& p1 : particles) {
             if (p1.getNextEvent().type != EventType::INVALID) {
                 if (p1.getNextEvent().type == EventType::PARTICLE_COLLISION &&
-                    p1.getNextEvent().otherIdx < p1.getID())
+                    p1.getNextEvent().otherIdx > p1.getID())
                     continue; //skip double entries
                 eventQueue.push(&p1.getNextEvent());
             }
