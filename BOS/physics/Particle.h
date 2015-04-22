@@ -140,7 +140,13 @@ template< unsigned int DIM >
 std::ostream& operator<<(std::ostream& os, Particle<DIM> p) {
     os << "Particle {.id=" << p.getID() << " .pos=" << p.getPosition() 
             << " .vel=" << p.getVelocity()
-            << " .t=" << p.getLocalTime() << " .r=" << p.getRadius() << "}";
+            << " .t=" << p.getLocalTime() << " .r=" << p.getRadius();
+    
+    if (p.getNextEvent().type != EventType::INVALID) {
+        os << " .evt=" << p.getNextEvent();
+    }
+    
+    os << "}";
     
     return os;
 }

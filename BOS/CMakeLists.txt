@@ -2,12 +2,20 @@ cmake_minimum_required( VERSION 2.8 )
 project ( BOS )
 
 option( GRAPHICAL_TOOLS "Enable the graphical debug tools (requires bullshit)" ON )
+option( TESTING_ENABLED "Enables the unit tests" ON )
+
+if (UNIX)
+ list( APPEND CMAKE_CXX_FLAGS "-std=c++11" )
+endif()
+
+include_directories( "${CMAKE_SOURCE_DIR}" )
+
 if (GRAPHICAL_TOOLS)
     include( ExternalProject )
     option( FIRST_BUILD "Download + compile the glfw sources only" OFF )
 
     if(UNIX)
-        list( APPEND CMAKE_CXX_FLAGS "-std=c++11" )
+       
         if (APPLE)
             find_package( glew REQUIRED)
             find_library( COCOA_LIBRARY cocoa )
@@ -30,7 +38,7 @@ if (GRAPHICAL_TOOLS)
               PATH_SUFFIXES lib src)
 
     include_directories( "${CMAKE_BINARY_DIR}/lib/src/GLFW/include" )
-    include_directories( "${CMAKE_SOURCE_DIR}" )
+
 
 
     if (NOT ${FIRST_BUILD})
@@ -43,3 +51,9 @@ if (GRAPHICAL_TOOLS)
       endif()
     endif()
 endif()
+
+if (TESTING_ENABLED)
+  enable_testing()
+  add_subdirectory( tests )
+endif()
+
