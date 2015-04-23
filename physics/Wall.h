@@ -10,6 +10,9 @@
 
 #include <math/Plane.h>
 
+/// A wall is just a plane.
+/// (for now, as it may also include collision properties and movement)
+
 template< unsigned int DIM >
 using Wall = Plane<DIM>;
 

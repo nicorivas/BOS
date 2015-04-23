@@ -23,6 +23,7 @@ struct GLTriangle {
     GLTriangle(GLuint a, GLuint b, GLuint c) : a(a), b(b), c(c) { }
 };
 
+// A ball is a refined icosahedron
 class GLBall {
     GLuint vao;
     GLuint vbo[3];
@@ -32,9 +33,11 @@ class GLBall {
     std::vector<GLTriangle> indices;
 public:
     GLBall() {
+        
         GLfloat t = (1.0f + std::sqrt(5.0f)) / 2.0f;
         
-        //HAHAHAHA BLACK MAGIC!!!! HAHAHAHA GOOD LUCK SUCKAH
+        // This are the vertices of a platonic icosahedron,
+        // the platonic solid with the higher number of faces.
         vertices.reserve(12);
         vertices.emplace_back(-1,  t,  0);
         vertices.emplace_back( 1,  t,  0);
