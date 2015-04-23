@@ -155,6 +155,13 @@ public:
         return container.size();
     }
     
+    template<typename Func>
+    void eval(Func func) {
+        for (T& t : container) {
+            func(t);
+        }
+    }
+    
 #ifdef DEBUG_MODE
     void dump() const {
         for (const T& t : container) {
@@ -181,6 +188,7 @@ private:
         //While our parent is bigger than our child
         while (compare(container[parent], container[idx])) {
             std::swap(container[parent],container[idx]);
+            std::cout << "SU=[" << size() << "] "  << idx << " <--> " << parent << std::endl;
             idx = parent;
             
             if (parent == 0)
@@ -197,15 +205,24 @@ private:
             if (cLeft >= container.size())
                 return; //We reached the end of the tree
             if (cRight == container.size()) {
-                if (!compare(container[idx],container[cLeft])) {
+                std::cout << "WEIRD CASE - compare " << idx << "/" << cLeft << std::endl;
+           //     std::cout << "IDX = " << container[idx] << ": " << *container[idx] << std::endl;
+           //     std::cout << "IDX = " << container[cLeft] << ": " << *container[cLeft] << std::endl;
+                std::cout << this << " & " << &container << std::endl;
+                dump();
+                if (!compare(container[cLeft],container[idx])) {
+                    std::cout << "SWAPPED!" << std::endl;
+                    std::cout << "Sd=[" << size() << "] "  << idx << " <--> " << cLeft << std::endl;
                     std::swap(container[idx],container[cLeft]);
-                    return;
+                    dump();
                 }
+                return;
             }
             
             bool biggest = compare(container[cRight],container[cLeft]);
             std::size_t cBiggest = biggest ? cLeft : cRight;
             if (!compare(container[cBiggest], container[idx])) {
+                std::cout << "SD=[" << size() << "] "  << idx << " <--> " << cBiggest << std::endl;
                 std::swap(container[cBiggest], container[idx]);
                 idx = cBiggest;
             } else {
