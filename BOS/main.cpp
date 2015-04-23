@@ -166,12 +166,13 @@ int main(int argc, char** argv) {
     ball.compile(true);
     
     Simulation<3> sim(0.10, 10);
-    sim.addWall({{-1,-1,-1},{1,0,0}});
-    sim.addWall({{-1,-1,-1},{0,1,0}});
-    sim.addWall({{-1,-1,-1},{0,0,1}});
-    sim.addWall({{1,1,1},{-1, 0, 0}});
-    sim.addWall({{1,1,1},{ 0,-1, 0}});
-    sim.addWall({{1,1,1},{ 0, 0,-1}});
+    sim.addWall({{-1,-1,-1},{ 1, 0, 0}});
+    sim.addWall({{-1,-1,-1},{ 0, 1, 0}});
+    sim.addWall({{-1,-1,-1},{ 0, 0, 1}});
+    
+    sim.addWall({{ 1, 1, 1},{-1, 0, 0}});
+    sim.addWall({{ 1, 1, 1},{ 0,-1, 0}});
+    sim.addWall({{ 1, 1, 1},{ 0, 0,-1}});
     
     sim.addParticle({0, {0.2, 0.2, -0.2}, {0.4, 0, 0.2}, 0.05, 0});
     sim.addParticle({0, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});

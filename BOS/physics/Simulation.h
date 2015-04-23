@@ -12,6 +12,7 @@
 #include <math/Line.h>
 #include <physics/Wall.h>
 
+#define DEBUG_MODE
 #include <PriorityQueue.h>
 
 #include <vector>
@@ -24,7 +25,7 @@ class Simulation {
 private:
     std::vector< Particle<DIM> > particles;
     std::vector< Wall<DIM> > walls;
-    std::vector< std::function<void(Simulation&)> > funcTriggers;
+    std::vector< std::function<void(Simulation<DIM>&)> > funcTriggers;
     
     
     
@@ -134,13 +135,26 @@ public:
             for (Particle<DIM>& p : particles) {
                 std::cout << p << std::endl;
             }
+
+            std::cout << "\n\n\n\nNEW EVENT";
+            std::cout << &eventQueue << std::endl;
+            std::cout << "\n---------- Event List ----------\n";
+            eventQueue.eval([](Event* evt) { std::cout << evt << ": " << *evt << '\n'; });
+            std::cout << "-------[count=" << eventQueue.size() << "]" << std::endl;
+
             
             Event* evt = eventQueue.top(); eventQueue.pop();
+            
+            std::cout << &eventQueue << std::endl;
+            
+            std::cout << "\n--[APOP]-- Event List --[APOP]--\n";
+            eventQueue.eval([](Event* evt) { std::cout << evt << ": " << *evt << '\n'; });
+            std::cout << "-------[count=" << eventQueue.size() << "]" << std::endl;
+            
             mostRecentEvent = evt->time + globalTime;
-            std::cout << "Processing: " << *evt << std::endl;
+            std::cout << "Processing: " << evt << ": " << *evt << std::endl;
             std::cout << mostRecentEvent << " - " << globalTime << " - " << endTime << std::endl;
             
-            std::cout << "\n--------- Event List ----------\n";
             
             switch (evt->type) {
                 case EventType::PARTICLE_COLLISION:
@@ -264,6 +278,8 @@ private:
                 eventQueue.push(&p2.getNextEvent());
             }
             
+        } else {
+            eventQueue.push(&p1.getNextEvent());
         }
     }
     void initialPopulateEvents() {
