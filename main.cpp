@@ -175,10 +175,10 @@ int main(int argc, char** argv) {
     sim.addWall({{ 1, 1, 1},{ 0, 0,-1}});
     
     sim.addParticle({0, {0.2, 0.2, -0.2}, {0.4, 0, 0.2}, 0.05, 0});
-    sim.addParticle({0, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});
+    sim.addParticle({1, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});
     cam.move({-0.5, -0.5, -1});
     int funcNum = sim.addFunction([&](Simulation<3>& sim) {
-        std::cout << "CALLBACK!" << std::endl;
+        //std::cout << "CALLBACK!" << std::endl;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         //std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
         cam.move(movedir);
 
         cam.render();
-        std::cout << sim.getLastEvenTime()<< std::endl;
+        //std::cout << sim.getLastEvenTime()<< std::endl;
         sim.synchronise();
         ball.renderInstanced(sim.getParticles());
         sim.queueFunction(0,sim.getLastEvenTime() + 0.01);

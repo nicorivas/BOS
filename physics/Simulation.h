@@ -12,7 +12,6 @@
 #include <math/Line.h>
 #include <physics/Wall.h>
 
-#define DEBUG_MODE
 #include <PriorityQueue.h>
 
 #include <vector>
@@ -132,7 +131,7 @@ public:
         initialPopulateEvents();
         
         while (mostRecentEvent < endTime) {
-            for (Particle<DIM>& p : particles) {
+            /*for (Particle<DIM>& p : particles) {
                 std::cout << p << std::endl;
             }
 
@@ -142,18 +141,18 @@ public:
             eventQueue.eval([](Event* evt) { std::cout << evt << ": " << *evt << '\n'; });
             std::cout << "-------[count=" << eventQueue.size() << "]" << std::endl;
 
-            
+            */
             Event* evt = eventQueue.top(); eventQueue.pop();
-            
+            /*
             std::cout << &eventQueue << std::endl;
             
             std::cout << "\n--[APOP]-- Event List --[APOP]--\n";
             eventQueue.eval([](Event* evt) { std::cout << evt << ": " << *evt << '\n'; });
             std::cout << "-------[count=" << eventQueue.size() << "]" << std::endl;
-            
+            */
             mostRecentEvent = evt->time + globalTime;
-            std::cout << "Processing: " << evt << ": " << *evt << std::endl;
-            std::cout << mostRecentEvent << " - " << globalTime << " - " << endTime << std::endl;
+            //std::cout << "Processing: " << evt << ": " << *evt << std::endl;
+            //std::cout << mostRecentEvent << " - " << globalTime << " - " << endTime << std::endl;
             
             
             switch (evt->type) {
@@ -169,8 +168,8 @@ public:
                     
                     Vector<DIM> v = p1.getVelocity() - p2.getVelocity();
                     
-                    p1.setVelocity(p1.getVelocity() - 2*d*dot(v,d));
-                    p2.setVelocity(p2.getVelocity() + 2*d*dot(v,d));
+                    p1.setVelocity(p1.getVelocity() - d*dot(v,d));
+                    p2.setVelocity(p2.getVelocity() + d*dot(v,d));
                     
                     p1.setNextEvent({});
                     p2.setNextEvent({});
@@ -237,7 +236,7 @@ private:
                                     p1.getLocalTime() - p2.getLocalTime());
             if (t < smallestEvent.time && t < p2.getNextEvent().time) {
                 smallestEvent.otherIdx = i;
-                smallestEvent.time = i;
+                smallestEvent.time = t;
                 smallestEvent.type = EventType::PARTICLE_COLLISION;
             }
         }
@@ -247,6 +246,7 @@ private:
             Particle<DIM>& p2 = particles[smallestEvent.otherIdx];
             //Ah shit, the other particle already has a collision scheduled,
             //so we're just going to cancel that stuff
+            
             
             p1.setNextEvent(smallestEvent);
             if (p2.getNextEvent().type == EventType::PARTICLE_COLLISION) {
@@ -269,10 +269,11 @@ private:
                 
             } else {
                 smallestEvent.otherIdx = p1.getID();
+                eventQueue.erase(&p2.getNextEvent());
                 p2.setNextEvent(smallestEvent);
             }
             
-            if (p1.getID() < p2.getID()) {
+            if (p1.getID() > p2.getID()) {
                 eventQueue.push(&p1.getNextEvent());
             } else {
                 eventQueue.push(&p2.getNextEvent());
