@@ -21,6 +21,8 @@
 #include <chrono>
 #include <thread>
 
+#include <random>
+
 using namespace std;
 
 static Camera cam;
@@ -158,6 +160,7 @@ int main(int argc, char** argv) {
     GLBall ball;
     
     glfwSetWindowSizeCallback(win, resizeFunc);
+    resizeFunc(win, 800, 600);
     //Setup some basic callbacks
     glfwSetKeyCallback(win, keyFunc);
     glfwSetCursorPosCallback(win, cursorFunc);
@@ -165,18 +168,64 @@ int main(int argc, char** argv) {
     ball.subdivide(3);
     ball.compile(true);
     
-    Simulation<3> sim(0.10, 10);
-    sim.addWall({{-1,-1,-1},{ 1, 0, 0}});
-    sim.addWall({{-1,-1,-1},{ 0, 1, 0}});
-    sim.addWall({{-1,-1,-1},{ 0, 0, 1}});
+    std::mt19937_64 gen(0);
+    std::normal_distribution<double> randDist(0,1);
     
-    sim.addWall({{ 1, 1, 1},{-1, 0, 0}});
-    sim.addWall({{ 1, 1, 1},{ 0,-1, 0}});
-    sim.addWall({{ 1, 1, 1},{ 0, 0,-1}});
+    Simulation<3> sim(0.10, 1000);
     
-    sim.addParticle({0, {0.2, 0.2, -0.2}, {0.4, 0, 0.2}, 0.05, 0});
-    sim.addParticle({1, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});
-    cam.move({-0.5, -0.5, -1});
+    double spacing = 0.01;
+    double radius = 0.5;
+    int n = 0;
+    int i = 0, j = 0, k = 0;
+    double px, py, pz;
+    int nmax = 10;
+    double packing_fraction = 0.1;
+    double lx = pow(nmax*4.0/3.0*M_PI*pow(radius+spacing,3.0)/packing_fraction,1.0/3.0)*1.0;
+    double ly = lx*1.0;
+    double lz = lx*1.0;
+    
+    std::cout << lx << std::endl;
+    
+    sim.addWall({{ 0, 0, 0},{ 1, 0, 0}});
+    sim.addWall({{ 0, 0, 0},{ 0, 1, 0}});
+    sim.addWall({{ 0, 0, 0},{ 0, 0, 1}});
+    
+    sim.addWall({{lx,ly,lz},{-1, 0, 0}});
+    sim.addWall({{lx,ly,lz},{ 0,-1, 0}});
+    sim.addWall({{lx,ly,lz},{ 0, 0,-1}});
+    
+    while (n < nmax) {
+        px = radius+spacing+2*(radius+spacing)*i;
+        py = radius+spacing+2*(radius+spacing)*j;
+        pz = radius+spacing+2*(radius+spacing)*k;
+        std::cout << px << " " << py << " " << pz << std::endl;
+        i++;
+        if (px+radius+spacing > lx) {
+            i = 0;
+            j++;
+            continue;
+        }
+        if (py+radius+spacing > ly) {
+            i = 0;
+            j = 0;
+            k++;
+            continue;
+        }
+        if (pz+radius+spacing > lz) {
+            std::cerr << "Particle don't fit inside walls" << std::endl;
+            exit(1);
+        }
+        n++;
+        std::cout << n << std::endl;
+        sim.addParticle({n, {px, py, pz}, {randDist(gen), randDist(gen), randDist(gen)}, 0.5, 0});
+    }
+    
+    std::cout << sim.getParticles().size() << std::endl;
+    
+    //sim.addParticle({0, {0.2, 0.2, -0.2}, {0.4, 0, 0.2}, 0.05, 0});
+    //sim.addParticle({1, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});
+    
+    cam.move({1.0, 1.0, -10});
     int funcNum = sim.addFunction([&](Simulation<3>& sim) {
         //std::cout << "CALLBACK!" << std::endl;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

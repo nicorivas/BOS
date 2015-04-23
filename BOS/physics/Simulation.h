@@ -26,6 +26,8 @@ private:
     std::vector< Wall<DIM> > walls;
     std::vector< std::function<void(Simulation<DIM>&)> > funcTriggers;
     
+    Vector<DIM> domainOrigin;
+    Vector<DIM> domainEnd;
     
     
     double endTime;
@@ -56,7 +58,24 @@ public:
         funcTriggers.emplace_back(func);
         return idx;
     }
-    
+    /*
+    void init() {
+        // Create grid
+        Grid<2> grid({2*radii, 2*radii});
+        
+        // Determine particle's cell index
+        for (const Particle* particle : particles)
+        {
+            Vector<DIM> pos = particle->getPosition();
+            Vector<DIM> cellSize = grid->getCellSize();
+            for (unsigned int i = 0; i < DIM; i++)
+            {
+                particle.cellIndex[i] = (int)(pos[i]/cellSize[i]);
+            }
+        }
+    }
+     */
+
     void queueFunction(std::size_t func, double when) {
         Event * evt = new Event(when - globalTime, func, EventType::FUNC_EVALUATION);
         unownedEvents.insert(evt);
@@ -152,7 +171,7 @@ public:
             */
             mostRecentEvent = evt->time + globalTime;
             //std::cout << "Processing: " << evt << ": " << *evt << std::endl;
-            //std::cout << mostRecentEvent << " - " << globalTime << " - " << endTime << std::endl;
+            std::cout << mostRecentEvent << " - " << globalTime << " - " << endTime << std::endl;
             
             
             switch (evt->type) {
@@ -162,6 +181,8 @@ public:
                     Particle<DIM>& p1 = particles[p2.getNextEvent().otherIdx];
                     p1.advance(evt->time);
                     p2.advance(evt->time);
+                    
+                    std::cout << evt->time << std::endl;
                     
                     Vector<DIM> d = p1.getPosition() - p2.getPosition();
                     d /= sqrt(dot(d,d)); //normalise
@@ -253,7 +274,7 @@ private:
                 Particle<DIM>& cancelledPartner = particles[p2.getNextEvent().otherIdx];
                 
                 //Who owned the event? (answer: smallest ID)
-                Event* pEvent = (p2.getID() < cancelledPartner.getID())
+                Event* pEvent = (p2.getID() > cancelledPartner.getID())
                                  ? &p2.getNextEvent() : &cancelledPartner.getNextEvent();
                 
                 //BOOM! GONE!
