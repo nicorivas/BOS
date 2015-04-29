@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
     int n = 0;
     int i = 0, j = 0, k = 0;
     double px, py, pz;
-    int nmax = 10;
+    int nmax = 81;
     double packing_fraction = 0.1;
     double lx = pow(nmax*4.0/3.0*M_PI*pow(radius+spacing,3.0)/packing_fraction,1.0/3.0)*1.0;
     double ly = lx*1.0;
@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
             std::exit(0);
         }
     });
-    sim.queueFunction(funcNum,0.01);
+   // sim.queueFunction(funcNum,0.01);
     sim.run();
     
     /*
