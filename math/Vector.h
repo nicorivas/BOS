@@ -8,6 +8,8 @@
 #ifndef VECTOR_H
 #define	VECTOR_H
 
+#include <hdf5/HDF5.h>
+
 #include <cassert>
 #include <cmath>
 #include <array>
@@ -17,7 +19,7 @@
 
 template<unsigned int DIM>
 class Vector final {
-    std::array<double, DIM> array;
+    double array[DIM];
 public:
     Vector() {
         for (double& d: array)
@@ -25,21 +27,24 @@ public:
     }
     
     Vector(const Vector& other) {
-        array = other.array;
+        for (std::size_t i = 0; i < DIM; i++) {
+          array[i] = other.array[i];
+        }
     }
     
     Vector& operator=(const Vector& other) {
-        array = other.array;
+        for (std::size_t i = 0; i < DIM; i++) {
+          array[i] = other.array[i];
+        }
         return *this;
     }
     
     Vector(std::initializer_list<double> d) {
         assert(d.size() == DIM);
         auto listIt = d.begin();
-        auto arrayIt = array.begin();
         
-        for (; listIt != d.end(); listIt++, arrayIt++) {
-            *arrayIt = *listIt;
+        for (double& v : array) {
+            v = *listIt++;
         }
     }
     
@@ -103,6 +108,22 @@ public:
         return (*this) * (1/d);
     }
     
+    static
+    hid_t getTypeID() {
+        hid_t typeID = H5Tcreate(H5T_COMPOUND, sizeof(Vector<DIM>));
+        hid_t dtype = ::getTypeID<double>();
+        if (DIM >= 1)
+          H5Tinsert(typeID, "x", offsetof(Vector<DIM>,array[0]), dtype);
+        if (DIM >= 2)
+          H5Tinsert(typeID, "y", offsetof(Vector<DIM>,array[1]), dtype);
+        if (DIM >= 3)
+          H5Tinsert(typeID, "z", offsetof(Vector<DIM>,array[2]), dtype);
+        if (DIM >= 4)
+          H5Tinsert(typeID, "u", offsetof(Vector<DIM>,array[3]), dtype);
+        return typeID;
+    }
+    
+        
 };
 
 template<unsigned int DIM>

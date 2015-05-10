@@ -85,6 +85,9 @@ public:
         indices.emplace_back(6, 2, 10);
         indices.emplace_back(8, 6, 7);
         indices.emplace_back(9, 8, 1);
+        
+        //So, now we have a very ugly looking squarish ball.
+        //We just refine every triangle and normalize all the radii
     }
     
     ~GLBall() {
@@ -92,6 +95,12 @@ public:
         glDeleteBuffers(3, vbo);
     }
     
+    /**
+     * This function refines the ball shape, into something looking round.
+     * For every level, it increases the vertices exponentially!!!
+     * 
+     * Therefore, running it with a level > 4 makes you very stupid.
+     */
     void subdivide(unsigned int level) {
         for (unsigned int i = 0; i < level; i++) {
             std::vector<GLTriangle> newIndices;
