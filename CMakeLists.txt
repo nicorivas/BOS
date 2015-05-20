@@ -24,6 +24,7 @@ include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/deps/hdf5-${HDF5_VERSION}/src"
 include_directories( "${CMAKE_CURRENT_BINARY_DIR}/lib/hdf5/src/hdf5-build" )
 
 add_executable( HDF5UnitTest HDF5UnitTest.cpp hdf5/HDF5.cpp )
+add_dependencies( HDF5UnitTest hdf5 )
 target_link_libraries( HDF5UnitTest ${CMAKE_CURRENT_BINARY_DIR}/lib/hdf5/src/hdf5-build/bin/libhdf5.a dl)
 # target_compile_options( HDF5UnitTest PUBLIC -fno-rtti )
 add_test( HDF5UnitTest HDF5UnitTest )
