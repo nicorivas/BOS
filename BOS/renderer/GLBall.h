@@ -8,7 +8,9 @@
 #ifndef GLBALL_H
 #define	GLBALL_H
 
+#include <physics/Simulation.h>
 #include <physics/Particle.h>
+#include <hg/MercuryData.h>
 
 #include <GL/glew.h>
 #include <cmath>
@@ -148,7 +150,7 @@ public:
         }
     }
     
-    void compile(bool instanced = true) {
+    void compile(bool instanced = true, bool edParticle = true) {
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
         glGenBuffers(3, vbo);
@@ -165,7 +167,24 @@ public:
         
         if (instanced) {
           glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-          Particle<3>::defineVertexAttributePointers();
+          if (edParticle) {
+            Particle<3>::defineVertexAttributePointers();
+          } else {
+            glEnableVertexAttribArray(2);
+            glEnableVertexAttribArray(3);
+            glEnableVertexAttribArray(4);
+            glEnableVertexAttribArray(5);
+
+            glVertexAttribDivisor(2, 1); //Tell that these arrays are instanced!
+            glVertexAttribDivisor(3, 1);
+            glVertexAttribDivisor(4, 1);
+            glVertexAttribDivisor(5, 1);
+
+            glVertexAttribPointer(2, 3, GL_DOUBLE, false, sizeof(MercuryParticle<3>), (void*)offsetof(MercuryParticle<3>,velocity));
+            glVertexAttribPointer(3, 3, GL_DOUBLE, false, sizeof(MercuryParticle<3>), (void*)offsetof(MercuryParticle<3>,position));
+            glVertexAttribPointer(4, 1, GL_DOUBLE, false, sizeof(MercuryParticle<3>), (void*)offsetof(MercuryParticle<3>,radius));
+            glVertexAttribPointer(5, 1, GL_FLOAT, false, sizeof(MercuryParticle<3>), (void*)offsetof(MercuryParticle<3>,speciesID));
+          }
         }
         
         glBindVertexArray(0);
@@ -173,14 +192,26 @@ public:
     
     void render() {
         glBindVertexArray(vao);
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
         glDrawElements(GL_TRIANGLES, size*3, GL_UNSIGNED_INT, (void*)0);
         glBindVertexArray(0);
     }
     
     void renderInstanced(const std::vector<Particle<3>>& particles) {
         glBindVertexArray(vao);
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
         glBufferData(GL_ARRAY_BUFFER, particles.size() * sizeof(Particle<3>), particles.data(), GL_DYNAMIC_DRAW);
+        
+        glDrawElementsInstanced(GL_TRIANGLES, size*3, GL_UNSIGNED_INT, (void*)0, particles.size());
+        glBindVertexArray(0);
+    }
+    
+    void renderInstanced(const std::vector<MercuryParticle<3>>& particles) {
+        glBindVertexArray(vao);
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+        glBufferData(GL_ARRAY_BUFFER, particles.size() * sizeof(MercuryParticle<3>), particles.data(), GL_DYNAMIC_DRAW);
         
         glDrawElementsInstanced(GL_TRIANGLES, size*3, GL_UNSIGNED_INT, (void*)0, particles.size());
         glBindVertexArray(0);

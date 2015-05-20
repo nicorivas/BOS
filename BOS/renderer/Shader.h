@@ -21,6 +21,7 @@ enum class ShaderType : GLenum {
 class Shader final {
 public:
     Shader(ShaderType shadertype, std::string text);
+    Shader(ShaderType shadertype, const char * buffer, GLint size);
     ~Shader();
     
     Shader(const Shader& orig) = delete;
@@ -57,6 +58,7 @@ public:
     
     void addShader(Shader&& shader);
     void addShader(ShaderType shadertype, std::string text);
+    void addShader(ShaderType shadertype, const char * buff, GLint len);
     void addShader(ShaderType shadertype, std::istream& text);
     
     operator bool() const;

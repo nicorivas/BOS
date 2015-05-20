@@ -58,6 +58,31 @@ Shader::Shader(ShaderType shadertype, std::string fname)
     
 }
 
+Shader::Shader(ShaderType shadertype, const char * str, GLint len)
+  : shaderType(shadertype) {
+    //request a GL shader
+    shaderID = glCreateShader((GLenum)shaderType);
+    
+    glShaderSource(shaderID, 1, &str, &len);
+    
+    glCompileShader(shaderID);
+    
+    GLint compilationStatus;
+    
+    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compilationStatus );
+    
+    if (!compilationStatus) {
+        std::cerr << "Compile error in shader!" << std::endl;
+        std::string errorMessage;
+        GLint length;
+        glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length);
+        errorMessage.resize(length);
+        glGetShaderInfoLog(shaderID, length, &length, &errorMessage[0]);
+        errorMessage.resize(length);
+        std::cerr << errorMessage << std::endl;
+    }
+    
+}
 
 Shader::~Shader() {
     if (shaderType != ShaderType::Invalid)
@@ -114,6 +139,9 @@ void ShaderProgram::addShader(Shader&& shader) {
 
 void ShaderProgram::addShader(ShaderType shadertype, std::string text) {
     shaders.emplace_back(shadertype, text);
+}
+void ShaderProgram::addShader(ShaderType shadertype, const char * str, GLint len) {
+    shaders.emplace_back(shadertype, str, len);
 }
 
 void ShaderProgram::link() {
