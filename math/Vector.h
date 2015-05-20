@@ -108,6 +108,16 @@ public:
         return (*this) * (1/d);
     }
     
+    double lengthSq() const {
+        return dot(*this, *this);
+    }
+    
+    Vector<DIM> normalized() const {
+        
+        double len = std::sqrt(lengthSq());
+        return *this / len;
+    }
+    
     static
     hid_t getTypeID() {
         hid_t typeID = H5Tcreate(H5T_COMPOUND, sizeof(Vector<DIM>));
@@ -156,6 +166,14 @@ double dot(Vector<DIM> a, Vector<DIM> b) {
         d += a[i] * b[i];
     }
     return d;
+}
+
+Vector<3> cross(Vector<3> a, Vector<3> b) {
+    Vector<3> c;
+    c[0] = a[1]*b[2] - a[2]*b[1];
+    c[1] = a[2]*b[0] - a[0]*b[2];
+    c[2] = a[0]*b[1] - a[1]*b[0];
+    return c;
 }
 
 template<unsigned int DIM>

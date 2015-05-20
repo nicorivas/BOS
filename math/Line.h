@@ -19,6 +19,7 @@ private:
 public:
     Line(Vector<DIM> a, Vector<DIM> b) : a(a), b(b) { }
     
+    
     Vector<DIM>  getOrig() const { return a; }
     Vector<DIM>& getOrig()       { return a; }
     Vector<DIM>  getDir() const { return b; }
