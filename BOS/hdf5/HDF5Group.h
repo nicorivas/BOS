@@ -57,8 +57,8 @@ public:
 
 class HDF5Group : public HDF5Groupable<HDF5Group>, public HDF5Attributable<HDF5Group>
 {
-    template<typename T>
-    friend class HDF5Groupable;
+//    template<typename T>
+    friend class HDF5Groupable<HDF5Group>;
 
     HDF5Group(hid_t hid) : hid_(hid) { }
 
