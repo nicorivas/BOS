@@ -24,7 +24,7 @@
 #include <random>
 
 #include <data/shaders/shader_fragment.h>
-#include <data/shaders/shader_vertex.h>
+#include <data/shaders/shader_vertexED.h>
 using namespace std;
 
 static Camera cam;
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
     ShaderProgram shader;
-    shader.link();  shader.addShader(ShaderType::Vertex, vertexSRC, sizeof(vertexSRC));
+    shader.link();  shader.addShader(ShaderType::Vertex, vertexEDSRC, sizeof(vertexEDSRC));
     shader.addShader(ShaderType::Fragment, fragmentSRC, sizeof(fragmentSRC));
 
     shader.use();
@@ -180,7 +180,7 @@ int main(int argc, char** argv) {
     int n = 0;
     int i = 0, j = 0, k = 0;
     double px, py, pz;
-    int nmax = 100;
+    int nmax = 80;
     double packing_fraction = 0.1;
     double lx = pow(nmax*4.0/3.0*M_PI*pow(radius+spacing,3.0)/packing_fraction,1.0/3.0)*1.0;
     double ly = lx*1.0;
