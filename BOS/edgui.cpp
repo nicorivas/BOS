@@ -23,6 +23,8 @@
 
 #include <random>
 
+#include <data/shaders/shader_fragment.h>
+#include <data/shaders/shader_vertex.h>
 using namespace std;
 
 static Camera cam;
@@ -147,9 +149,9 @@ int main(int argc, char** argv) {
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
     ShaderProgram shader;
-    shader.addShader(ShaderType::Vertex, "vertex.glsl");
-    shader.addShader(ShaderType::Fragment, "fragment.glsl");
-    shader.link();
+    shader.link();  shader.addShader(ShaderType::Vertex, vertexSRC, sizeof(vertexSRC));
+    shader.addShader(ShaderType::Fragment, fragmentSRC, sizeof(fragmentSRC));
+
     shader.use();
     if (!shader) {
         std::cerr << "Shaders not happy :(" << std::endl;
