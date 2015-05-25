@@ -60,9 +60,9 @@ class HDF5Group : public HDF5Groupable<HDF5Group>, public HDF5Attributable<HDF5G
 //    template<typename T>
     friend class HDF5Groupable<HDF5Group>;
 
+public:
     HDF5Group(hid_t hid) : hid_(hid) { }
 
-public:
     HDF5Group(const HDF5Group& other) = delete;
 
     HDF5Group(HDF5Group&& other) : hid_(other.hid_)
