@@ -8,3 +8,6 @@ add_test( MathUnitTest MathUnitTest )
 
 add_executable( WallCollisionsUnitTest WallCollisionsUnitTest.cpp )
 add_test( WallCollisionsUnitTest WallCollisionsUnitTest )
+
+add_executable( SimulationUnitTest SimulationUnitTest.cpp )
+add_test( SimulationUnitTest SimulationUnitTest )
