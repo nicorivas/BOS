@@ -158,7 +158,7 @@ public:
         walls.push_back(wall);
     }
 
-    const std::vector<Particle<DIM>>& getParticles() const
+    const std::vector<Particle<DIM> >& getParticles() const
     {
         return particles;
     }
@@ -241,16 +241,18 @@ public:
                     break;
                 case EventType::WALL_COLLISION:
                 {
+                    std::cout << "\nEventType::WALL_COLLISION" << std::endl;
                     Wall<DIM>& w = walls[evt->otherIdx];
                     //So, we know there's a particle around this event.
                     //Find it.
                     Particle<DIM>& p = *(evt->getParticle<DIM>());
+                    std::cout << p << std::endl;
                     p.advance(evt->time);
+                    std::cout << p << std::endl;
                     p.setVelocity(p.getVelocity() - 2 * dot(p.getVelocity(), w.getNormal()) * w.getNormal());
+                    std::cout << p << std::endl;
                     p.setNextEvent({});
-
                     findNextEvent(p);
-
                 }
                     break;
                 case EventType::CELL_BOUNDARY:
@@ -262,13 +264,14 @@ public:
                     eventQueue.push(&rescaleEvent);
                     break;
                 case EventType::FUNC_EVALUATION:
+                    std::cout << *evt << std::endl;
                     funcTriggers[evt->otherIdx](*this);
                     unownedEvents.erase(evt);
                     delete evt;
                     break;
                 case EventType::INVALID:
                     std::cerr << globalTime << std::endl;
-                    std::cerr << "Invalid events?!?!?!";
+                    std::cerr << "Invalid events?!?!?!" << std::endl;
                     return;
             }
 
@@ -288,10 +291,12 @@ private:
     void findNextEvent(Particle<DIM>& p1)
     {
         Line<DIM> tr1 = p1.getTrajectory();
-        //Find wall intersections first, they are less work
+        
+        //Wall collisions
         for (std::size_t j = 0; j < walls.size(); j++)
         {
             double t = intersection(tr1, walls[j], p1.getRadius(), p1.getLocalTime());
+            std::cout << "p1.getLocalTime()=" << p1.getLocalTime() << std::endl;
             if (t < p1.getNextEvent().time)
             {
                 Event evt;
@@ -299,10 +304,11 @@ private:
                 evt.time = t;
                 evt.otherIdx = j;
                 p1.setNextEvent(evt);
+                std::cout << evt << std::endl;
             }
         }
 
-        //Yes? No?
+        //Particle collisions
         Event smallestEvent = p1.getNextEvent();
         for (std::size_t i = 0; i < particles.size(); i++)
         {
@@ -377,6 +383,7 @@ private:
 
     void initialPopulateEvents()
     {
+        // Particle wall
         for (std::size_t i = 0; i < particles.size(); i++)
         {
             Particle<DIM>& p = particles[i];
@@ -391,9 +398,11 @@ private:
                     evt.time = t;
                     evt.otherIdx = j;
                     p.setNextEvent(evt);
+                    std::cout << evt << std::endl;
                 }
             }
         }
+        // Particle particle
         for (std::size_t i = 0; i < particles.size(); i++)
         {
             Particle<DIM>& p1 = particles[i];

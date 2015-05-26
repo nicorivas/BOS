@@ -180,18 +180,15 @@ int main(int argc, char** argv) {
     int n = 0;
     int i = 0, j = 0, k = 0;
     double px, py, pz;
-    int nmax = 80;
+    int nmax = 1;
     double packing_fraction = 0.1;
-    double lx = pow(nmax*4.0/3.0*M_PI*pow(radius+spacing,3.0)/packing_fraction,1.0/3.0)*1.0;
-    double ly = lx*1.0;
-    double lz = lx*1.0;
-    
-    std::cout << lx << std::endl;
+    double lx = 5.0;//pow(nmax*4.0/3.0*M_PI*pow(radius+spacing,3.0)/packing_fraction,1.0/3.0)*1.0;
+    double ly = 5.0;//lx*1.0;
+    double lz = 5.0;//lx*1.0;
     
     sim.addWall({{ 0, 0, 0},{ 1, 0, 0}});
     sim.addWall({{ 0, 0, 0},{ 0, 1, 0}});
     sim.addWall({{ 0, 0, 0},{ 0, 0, 1}});
-    
     sim.addWall({{lx,ly,lz},{-1, 0, 0}});
     sim.addWall({{lx,ly,lz},{ 0,-1, 0}});
     sim.addWall({{lx,ly,lz},{ 0, 0,-1}});
@@ -218,11 +215,11 @@ int main(int argc, char** argv) {
             exit(1);
         }
         n++;
-        std::cout << n << std::endl;
+        //std::cout << n << std::endl;
         sim.addParticle({n, {px, py, pz}, {randDist(gen), randDist(gen), randDist(gen)}, 0.5, 0});
     }
     
-    std::cout << sim.getParticles().size() << std::endl;
+    std::cout << "Total number of particles=" << sim.getParticles().size() << std::endl;
     
     //sim.addParticle({0, {0.2, 0.2, -0.2}, {0.4, 0, 0.2}, 0.05, 0});
     //sim.addParticle({1, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});
@@ -240,7 +237,7 @@ int main(int argc, char** argv) {
         //std::cout << sim.getLastEvenTime()<< std::endl;
         sim.synchronise();
         ball.renderInstanced(sim.getParticles());
-        sim.queueFunction(0,sim.getLastEvenTime() + 0.01);
+        sim.queueFunction(0,sim.getLastEvenTime() + 1000.0);
         
         glfwSwapBuffers(win);
         glfwPollEvents();
@@ -251,7 +248,7 @@ int main(int argc, char** argv) {
             std::exit(0);
         }
     });
-    sim.queueFunction(funcNum,0.01);
+    sim.queueFunction(funcNum,1000.0);
     sim.run();
     
     /*

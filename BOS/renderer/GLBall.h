@@ -38,7 +38,7 @@ public:
         
         GLfloat t = (1.0f + std::sqrt(5.0f)) / 2.0f;
         
-        // This are the vertices of a platonic icosahedron,
+        // These are the vertices of a platonic icosahedron,
         // the platonic solid with the higher number of faces.
         vertices.reserve(12);
         vertices.emplace_back(-1,  t,  0);
@@ -197,7 +197,7 @@ public:
         glBindVertexArray(0);
     }
     
-    void renderInstanced(const std::vector<Particle<3>>& particles) {
+    void renderInstanced(const std::vector<Particle<3> >& particles) {
         glBindVertexArray(vao);
 //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
@@ -207,7 +207,7 @@ public:
         glBindVertexArray(0);
     }
     
-    void renderInstanced(const std::vector<MercuryParticle<3>>& particles) {
+    void renderInstanced(const std::vector<MercuryParticle<3> >& particles) {
         glBindVertexArray(vao);
 //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
         glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
