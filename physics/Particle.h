@@ -54,7 +54,7 @@ public:
     }
 
     Particle(int id, Vector<DIM> position, Vector<DIM> velocity, double radius, double time = 0)
-    : id(id), position(position), velocity(velocity), radius(radius), localTime(time) { }
+    : id(id), localTime(time), position(position), velocity(velocity), radius(radius) { }
 
     int getID() const {
         return id;

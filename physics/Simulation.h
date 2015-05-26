@@ -10,6 +10,7 @@
 
 #include <physics/Particle.h>
 #include <math/Line.h>
+#include <math/Intersection.h>
 #include <physics/Wall.h>
 
 #include <PriorityQueue.h>
@@ -25,6 +26,7 @@
 template < unsigned int DIM >
 class Simulation
 {
+    friend bool testSynchronize();
 private:
     std::vector< Particle<DIM> > particles;
     std::vector< Wall<DIM> > walls;
@@ -53,7 +55,10 @@ public:
      */
     Simulation(double rescaleTime, double endTime)
     : endTime(endTime), rescaleTime(rescaleTime), globalTime(0),
-    rescaleEvent(rescaleTime, 0, EventType::SYNC_RESCALE) { }
+            mostRecentEvent(0), rescaleEvent(rescaleTime, 0, EventType::SYNC_RESCALE)
+    {
+    
+    }
 
     std::size_t addFunction(std::function<void(Simulation&)>&& func)
     {
@@ -90,6 +95,11 @@ public:
     double getLastEvenTime() const
     {
         return mostRecentEvent;
+    }
+    
+    double getGlobalTime() const
+    {
+        return globalTime;
     }
 
     /**

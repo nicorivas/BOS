@@ -6,7 +6,7 @@ option( GRAPHICAL_TOOLS "Enable the graphical debug tools (requires bullshit)" O
 option( TESTING_ENABLED "Enables the unit tests" ON )
 
 if (UNIX)
- list( APPEND CMAKE_CXX_FLAGS "-std=c++11" )
+  list( APPEND CMAKE_CXX_FLAGS "-std=c++11 -Wall" )
 endif()
 
 include_directories( "${CMAKE_SOURCE_DIR}" )
