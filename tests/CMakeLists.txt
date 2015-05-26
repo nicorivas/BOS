@@ -5,3 +5,6 @@ add_test( PriorityQueue PriorityQueue )
 
 add_executable( MathUnitTest MathUnitTest.cpp )
 add_test( MathUnitTest MathUnitTest )
+
+add_executable( WallCollisionsUnitTest WallCollisionsUnitTest.cpp )
+add_test( WallCollisionsUnitTest WallCollisionsUnitTest )

@@ -43,6 +43,8 @@ double intersection(Line<DIM> l, Plane<DIM> plane, double d, double dt) {
     
     double t = -(lineDist - d) / directDist;
     
+    std::cout << "Intersection time=" << t << std::endl;
+    
     //In case we're slightly smaller than 0, it's because we're within the
     //radius of the cylinder. In that case there will still be a collision
     //but we need it ASAP. (and we can't go back in time)

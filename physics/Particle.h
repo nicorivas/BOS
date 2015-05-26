@@ -60,14 +60,24 @@ public:
         return id;
     }
     
+    void setTime(double time)
+    {
+        localTime = time;
+    }
+    
     double getTime() const
     {
         return localTime;
     }
-
-    void setTime(double localTime_)
+    // Should we have this duplicate names?
+    void setLocalTime(double time)
     {
-        localTime = localTime_;
+        localTime = time;
+    }
+
+    double getLocalTime() const
+    {
+        return localTime;
     }
 
     Vector<DIM> getPosition() const
@@ -98,16 +108,6 @@ public:
     void setRadius(double newRadius)
     {
         radius = newRadius;
-    }
-
-    void setLocalTime(double time)
-    {
-        localTime = time;
-    }
-
-    double getLocalTime() const
-    {
-        return localTime;
     }
 
     Line<DIM> getTrajectory() const {
