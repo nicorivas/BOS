@@ -12,6 +12,7 @@
 #include <math/Line.h>
 #include <math/Intersection.h>
 #include <physics/Wall.h>
+#include <physics/Grid.h>
 
 #include <PriorityQueue.h>
 
@@ -35,6 +36,7 @@ private:
     Vector<DIM> domainOrigin;
     Vector<DIM> domainEnd;
 
+    Grid<DIM> grid;
 
     double endTime;
     double rescaleTime;
@@ -175,7 +177,13 @@ public:
 
     void run()
     {
+        grid = Grid<DIM>({1.0,1.0,1.0});
+        grid.init(&domainOrigin, &domainEnd, &particles);
+        
         initialPopulateEvents();
+        
+        
+        //initialPopulateEvents();
         //for (Particle<DIM>& p : particles)
         //    findNextEvent(p);
 
@@ -267,6 +275,32 @@ public:
                     break;
                 case EventType::CELL_BOUNDARY:
                     std::cerr << "Unhandled CELL_BOUNDARY" << std::endl;
+                    
+                    Particle<DIM>& p = *(evt->getParticle<DIM>());
+                    
+                    std::cout << p << std::endl;
+                    std::cout << "p.cellIndex=" << p.cellIndex << std::endl;
+                    
+                    synchronise_all(evt->time - globalTime);
+                    globalTime = evt->time;
+                    
+                    grid.moveParticle(evt);
+                                      
+                    std::cout << p << std::endl;
+                    std::cout << "p.cellIndex=" << p.cellIndex << std::endl;
+                    
+                    p.setNextEvent({});
+                    
+                    eventQueue.print();
+                    
+                    for (Particle<DIM>& pa : particles) {
+                        if (pa.getNextEvent().type != EventType::INVALID)
+                            eventQueue.erase(&(pa.getNextEvent()));
+                        pa.setNextEvent({});
+                        findNextEvent(pa);
+                    }
+                    
+                    eventQueue.print();
                     break;
                 case EventType::SYNC_RESCALE:
                     rescale();
@@ -317,7 +351,37 @@ private:
                 std::cout << evt << std::endl;
             }
         }
-
+        
+        //Cell collisions
+        std::cout << "particle " << p1.getID() << " with cells " << std::endl;          
+        std::array<int, DIM> ic = grid.getIndexCoordsFromIndex(p1.cellIndex);
+        std::cout << "ic=(" << ic[0] << "," << ic[1] << "," << ic[2] << ")" << std::endl;
+        std::vector<int> indexes;
+        indexes.push_back(ic[0]*2);
+        indexes.push_back(ic[0]*2+1);
+        indexes.push_back(grid.getNCells(0)*2+ic[1]*2);
+        indexes.push_back(grid.getNCells(0)*2+ic[1]*2+1);
+        indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2);
+        indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2+1);
+        double t;
+        for (int i : indexes) {
+            std::cout << "i=" << i << std::endl;
+            std::cout << "plane=" << *(grid.getPlane(i)) << std::endl;
+            t = intersection(tr1, *(grid.getPlane(i)), 0.0, 0.0);
+            // We ask 't > 0' because after moving a particle to a cell boundary
+            // the next collision would be predicted for ever.
+            if (t > 1.0E-11) {
+                t += globalTime;
+                if (t < p1.getNextEvent().time) {
+                    Event evt;
+                    evt.type = EventType::CELL_BOUNDARY;
+                    evt.time = t;
+                    evt.otherIdx = i;
+                    p1.setNextEvent(evt);
+                }
+            }
+        }
+        
         //Particle collisions
         Event smallestEvent = p1.getNextEvent();
         for (std::size_t i = 0; i < particles.size(); i++)
@@ -393,7 +457,7 @@ private:
 
     void initialPopulateEvents()
     {
-        // Particle wall
+        // Particle-wall
         for (std::size_t i = 0; i < particles.size(); i++)
         {
             Particle<DIM>& p = particles[i];
@@ -412,7 +476,8 @@ private:
                 }
             }
         }
-        // Particle particle
+        
+        // Particle-particle
         for (std::size_t i = 0; i < particles.size(); i++)
         {
             Particle<DIM>& p1 = particles[i];
@@ -457,6 +522,40 @@ private:
                     p1.getNextEvent().otherIdx > p1.getID())
                     continue; //skip double entries
                 eventQueue.push(&p1.getNextEvent());
+            }
+        }
+        
+        // Particle-cell
+        for (std::size_t i = 0; i < particles.size(); i++) {
+            
+            std::cout << "particle " << i << " with cells " << std::endl;
+            
+            Particle<DIM>& p1 = particles[i];
+            Line<DIM> tr1 = p1.getTrajectory();
+            
+            std::array<int, DIM> ic = grid.getIndexCoordsFromIndex(p1.cellIndex);
+
+            std::cout << "ic=(" << ic[0] << "," << ic[1] << "," << ic[2] << ")" << std::endl;
+            
+            std::vector<int> indexes;
+            indexes.push_back(ic[0]);
+            indexes.push_back(ic[0]+1);
+            indexes.push_back(grid.getNCells(0)*2+ic[1]);
+            indexes.push_back(grid.getNCells(0)*2+ic[1]+1);
+            indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]);
+            indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]+1);
+            
+            double t;
+            for (int i : indexes) {
+                std::cout << "i=" << i << std::endl;
+                t = intersection(tr1, *(grid.getPlane(i)), 0.0, 0.0);
+                if (t < p1.getNextEvent().time) {
+                    Event evt;
+                    evt.type = EventType::CELL_BOUNDARY;
+                    evt.time = t;
+                    evt.otherIdx = i;
+                    p1.setNextEvent(evt);
+                }
             }
         }
     }
