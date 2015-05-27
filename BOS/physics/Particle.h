@@ -116,12 +116,12 @@ public:
     }
     
     /**
-     * Advances the particle by time t
-     * @param t time to advance by
+     * Advances the particle by time dt
+     * @param dt time to advance by
      */
-    void advance(double t) {
-        position += velocity * t;
-        localTime += t;
+    void advance(double dt) {
+        position += velocity * dt;
+        localTime += dt;
     }
     
     const Event& getNextEvent() const {
@@ -158,10 +158,10 @@ template< unsigned int DIM >
 std::ostream& operator<<(std::ostream& os, Particle<DIM> p) {
     os << "Particle {.id=" << p.getID() << " .pos=" << p.getPosition() 
             << " .vel=" << p.getVelocity()
-            << " .t=" << p.getLocalTime() << " .r=" << p.getRadius();
+            << " .t=" << p.getLocalTime() << " .r=" << p.getRadius() << std::endl;
     
     if (p.getNextEvent().type != EventType::INVALID) {
-        os << " .evt=" << p.getNextEvent();
+        os << "\t.evt=" << p.getNextEvent();
     }
     
     os << "}";

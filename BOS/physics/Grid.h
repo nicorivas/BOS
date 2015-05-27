@@ -96,11 +96,11 @@ public:
         return cellSize;
     }
     
-    Vector<DIM> getNCells() const {
+    std::array<unsigned int, DIM> getNCells() const {
         return nCells;
     }
     
-    int getNCells(int i) const {
+    unsigned int getNCells(unsigned int i) const {
         return nCells[i];
     }
     
@@ -180,16 +180,16 @@ public:
         // We need this until we figure out a way to determine how many
         // entities are in each cell; this is not trivial due to hash collisions
         // and the list being contiguous.
-        numberOfCells *= maxParticlesPerCell;
+        // numberOfCells *= maxParticlesPerCell;
         
         // I use specifically 'unsigned int' for the limit, as the size
         // type somehow didn't work (it gave different results in this line
         // and when comparing, just ahead in the while loop)
         //list.assign(numberOfCells, std::numeric_limits<unsigned int>::max());
-        list.assign(numberOfCells, std::numeric_limits<unsigned int>::max());
+        list.assign(numberOfCells*maxParticlesPerCell, std::numeric_limits<unsigned int>::max());
         
         // Locate particles in cell
-        unsigned int listIndex, cellIndex; // use 2 to avoid confusion
+        unsigned int listIndex; // use 2 to avoid confusion
         for (Particle<DIM>& p : *particles) {
             //std::cout << p.getPosition() << std::endl;
             unsigned int cellIndex = getCellIndexFromPosition(p.getPosition());
@@ -202,6 +202,7 @@ public:
             }
             list[listIndex] = p.getID();
         }
+        return 0;
     }
     
     // Given an event of a collision of a particle with a cell boundary, 
@@ -213,7 +214,7 @@ public:
         // Remove particle from the list
         cellIndex = event->getParticle<DIM>()->cellIndex;
         listIndex = cellIndex;
-        while (list[listIndex] != event->getParticle<DIM>()->getID() && listIndex < numberOfCells) {
+        while (list[listIndex] != event->getParticle<DIM>()->getID() && listIndex < numberOfCells*maxParticlesPerCell) {
             listIndex++;
         }
         list[listIndex] = std::numeric_limits<std::size_t>::max();

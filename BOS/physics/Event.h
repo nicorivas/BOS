@@ -15,7 +15,8 @@ enum class EventType {
     PARTICLE_COLLISION,
     WALL_COLLISION,
     CELL_BOUNDARY,
-    SYNC_RESCALE,
+    RESCALE,
+    SYNC,
     FUNC_EVALUATION,
     INVALID
 };
@@ -67,13 +68,17 @@ std::ostream& operator<<(std::ostream& os, const Event& evt) {
         case EventType::FUNC_EVALUATION:
             os << 'F';
             break;
-        case EventType::SYNC_RESCALE:
+        case EventType::RESCALE:
+            os << 'R';
+            break;
+        case EventType::SYNC:
             os << 'S';
             break;
     }
     if (   evt.type != EventType::CELL_BOUNDARY 
         && evt.type != EventType::INVALID
-        && evt.type != EventType::SYNC_RESCALE) {
+        && evt.type != EventType::SYNC
+        && evt.type != EventType::RESCALE) {
         os << " .id=" << evt.otherIdx;
     }
     

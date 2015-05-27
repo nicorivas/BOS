@@ -38,26 +38,28 @@ private:
 
     Grid<DIM> grid;
 
+    int eventCount;
     double endTime;
-    double rescaleTime;
+    double syncTime;
+    Event syncEvent;
+    double currentTime;
     double globalTime;
 
     double mostRecentEvent;
 
     PriorityQueue<Event*> eventQueue;
     std::set<Event*> unownedEvents;
-    Event rescaleEvent;
 public:
 
     /**
-     * Constructs a Simulation object with a synchronisation / rescale event
-     * every rescaleTime seconds, which will end at endTime
+     * Constructs a Simulation object with a synchronisation event
+     * every syncTime seconds, which will end at endTime
      * @param endTime the time at which this simulation will end
-     * @param rescaleTime the time at which a rescaleEvent is needed
+     * @param syncTime the time at which a syncEvent is needed
      */
-    Simulation(double rescaleTime, double endTime)
-    : endTime(endTime), rescaleTime(rescaleTime), globalTime(0),
-            mostRecentEvent(0), rescaleEvent(rescaleTime, 0, EventType::SYNC_RESCALE)
+    Simulation(double syncTime, double endTime)
+    : endTime(endTime), syncTime(syncTime), globalTime(0),
+            mostRecentEvent(0), syncEvent(syncTime, 0, EventType::SYNC)
     {
     
     }
@@ -126,7 +128,7 @@ public:
             p.getNextEvent().time -= avg;
         }
 
-        rescaleEvent.time -= avg;
+        syncEvent.time -= avg;
         for (Event* evt : unownedEvents)
         {
             evt->time -= avg;
@@ -136,27 +138,26 @@ public:
     }
 
     /**
-     * Synchronizes the time so that localtime of particles will be 0.
-     * It will be synchronized on the most recent event, which will be the 
-     * current event if this is called as a callback/event.
+     * Synchronizes the time so that new 0 is timeZero.
      */
-    void synchronise()
+    void synchronise(double timeZero)
     {
-        double dt = mostRecentEvent - globalTime;
-        for (Particle<DIM>& p : particles)
-        {
-            p.advance(dt - p.getLocalTime());
+        std::cout << "synchronise()" << std::endl;
+        for (Particle<DIM>& p : particles) {
+            p.advance(timeZero - p.getLocalTime());
             p.setLocalTime(0);
-            p.getNextEvent().time -= dt;
+            p.getNextEvent().time -= timeZero;
+            if (p.getNextEvent().time < 0) {
+                std::cerr << "Negative time shouldn't happen" << std::endl;
+                exit(0);
+            }
         }
 
-        rescaleEvent.time -= dt;
-        for (Event* evt : unownedEvents)
-        {
-            evt->time -= dt;
+        for (Event* evt : unownedEvents) {
+            evt->time -= timeZero;
         }
-
-        globalTime = mostRecentEvent;
+        
+        currentTime = 0.0;
     }
 
     void addParticle(Particle<DIM> p)
@@ -177,58 +178,27 @@ public:
 
     void run()
     {
+        domainOrigin = Vector<DIM>({0.0, 0.0, 0.0});
+        domainEnd = Vector<DIM>({5.0, 5.0, 5.0});
         grid = Grid<DIM>({1.0,1.0,1.0});
         grid.init(&domainOrigin, &domainEnd, &particles);
         
         initialPopulateEvents();
         
+        eventCount = 0;
         
-        //initialPopulateEvents();
-        //for (Particle<DIM>& p : particles)
-        //    findNextEvent(p);
-
-        unsigned long evtCount = 0;
-        auto t1 = std::chrono::high_resolution_clock::now();
-
-        while (mostRecentEvent < endTime)
+        while (globalTime < endTime)
         {
-            if (evtCount == EVT_PROFILE_COUNT)
-            {
-                auto t2 = std::chrono::high_resolution_clock::now();
-                auto tDiff = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-                std::cout << "EvtTimer: " << tDiff.count()
-                        << "\nEvt/ms: " << ((double) (evtCount)) / tDiff.count()
-                        << std::endl;
-                t1 = t2;
-                evtCount = 0;
-            }
-            evtCount++;
-            /*
-
-            std::cout << "\n\n\n\nNEW EVENT";
-            std::cout << &eventQueue << std::endl;
-            std::cout << "\n---------- Event List ----------\n";
-            eventQueue.eval([](Event* evt) { std::cout << evt << ": " << *evt << '\n'; });
-            std::cout << "-------[count=" << eventQueue.size() << "]" << std::endl;
-
-            */
             Event* evt = eventQueue.top();
             eventQueue.pop();
-            /*
-            std::cout << &eventQueue << std::endl;
-            
-            std::cout << "\n--[APOP]-- Event List --[APOP]--\n";
-            eventQueue.eval([](Event* evt) { std::cout << evt << ": " << *evt << '\n'; });
-            std::cout << "-------[count=" << eventQueue.size() << "]" << std::endl;
-             */
-            mostRecentEvent = evt->time + globalTime;
-            //std::cout << "Processing: " << evt << ": " << *evt << std::endl;
-            //std::cout << '.'; std::cout.flush();
-            //std::cout << *evt << std::endl;
+            //mostRecentEvent = evt->time + globalTime;            
             switch (evt->type)
             {
                 case EventType::PARTICLE_COLLISION:
                 {
+                    std::cout << "\n(" << eventCount << ") ";
+                    std::cout << "EventType::PARTICLE_COLLISION" << std::endl;
+                    
                     Particle<DIM>& p2 = particles[evt->otherIdx];
                     Particle<DIM>& p1 = particles[p2.getNextEvent().otherIdx];
                     p1.advance(evt->time);
@@ -259,96 +229,113 @@ public:
                     break;
                 case EventType::WALL_COLLISION:
                 {
-                    std::cout << "\nEventType::WALL_COLLISION" << std::endl;
+                    std::cout << "\n(" << eventCount << "," << evt->time << "," << globalTime << ") ";
+                    std::cout << "EventType::WALL_COLLISION" << std::endl;
+                    
                     Wall<DIM>& w = walls[evt->otherIdx];
-                    //So, we know there's a particle around this event.
-                    //Find it.
                     Particle<DIM>& p = *(evt->getParticle<DIM>());
-                    std::cout << p << std::endl;
-                    p.advance(evt->time);
-                    std::cout << p << std::endl;
+                    
+                    std::cout << "\t" << p << std::endl;
+                    p.advance(evt->time-currentTime);
+                    globalTime += evt->time-currentTime;
+                    currentTime = evt->time;
+                    
                     p.setVelocity(p.getVelocity() - 2 * dot(p.getVelocity(), w.getNormal()) * w.getNormal());
-                    std::cout << p << std::endl;
+                    std::cout << "\t" << p << std::endl;
+                    
                     p.setNextEvent({});
                     findNextEvent(p);
                 }
                     break;
                 case EventType::CELL_BOUNDARY:
-                    std::cerr << "Unhandled CELL_BOUNDARY" << std::endl;
+                {
+                    std::cout << "\n(" << eventCount << "," << evt->time << "," << globalTime << ") ";
+                    std::cout << "EventType::CELL_BOUNDARY" << std::endl;
                     
-                    Particle<DIM>& p = *(evt->getParticle<DIM>());
+                    Particle<DIM> p = *(evt->getParticle<DIM>());
                     
                     std::cout << p << std::endl;
                     std::cout << "p.cellIndex=" << p.cellIndex << std::endl;
-                    
-                    synchronise_all(evt->time - globalTime);
-                    globalTime = evt->time;
-                    
+                    p.advance(evt->time-currentTime);
                     grid.moveParticle(evt);
-                                      
+                    globalTime += evt->time-currentTime;
+                    currentTime = evt->time;
                     std::cout << p << std::endl;
                     std::cout << "p.cellIndex=" << p.cellIndex << std::endl;
                     
                     p.setNextEvent({});
-                    
-                    eventQueue.print();
-                    
-                    for (Particle<DIM>& pa : particles) {
-                        if (pa.getNextEvent().type != EventType::INVALID)
-                            eventQueue.erase(&(pa.getNextEvent()));
-                        pa.setNextEvent({});
-                        findNextEvent(pa);
-                    }
-                    
-                    eventQueue.print();
+                    findNextEvent(p);
+                }
                     break;
-                case EventType::SYNC_RESCALE:
+                case EventType::RESCALE:
+                {
+                    /*
+                    std::cout << "\n(" << eventCount << "," << evt->time << "," << globalTime << ") ";
+                    std::cout << "EventType::RESCALE" << std::endl;
+                    
                     rescale();
+
                     rescaleEvent.time += rescaleTime;
                     eventQueue.push(&rescaleEvent);
+                    */
+                }
+                    break;
+                case EventType::SYNC:
+                {
+                    std::cout << "\n(" << eventCount << "," << evt->time << "," << globalTime << ") ";
+                    std::cout << "EventType::SYNC" << std::endl;
+                    
+                    synchronise(evt->time);
+                    
+                    syncEvent.time += syncTime;
+                    eventQueue.push(&syncEvent);
+                }   
                     break;
                 case EventType::FUNC_EVALUATION:
+                {
+                    std::cout << "\n(" << eventCount << "," << evt->time << "," << globalTime << ") ";
+                    std::cout << "EventType::FUNC_EVALUATION" << std::endl;
+                    
                     std::cout << *evt << std::endl;
                     funcTriggers[evt->otherIdx](*this);
                     unownedEvents.erase(evt);
                     delete evt;
+                }
                     break;
                 case EventType::INVALID:
+                {
                     std::cerr << globalTime << std::endl;
                     std::cerr << "Invalid events?!?!?!" << std::endl;
+                }
                     return;
             }
-
+            eventCount++;
         }
-
-
-
-        auto t2 = std::chrono::high_resolution_clock::now();
-        auto tDiff = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-        std::cout << "EvtTimer: " << tDiff.count()
-                << "\nEvt/ms: " << ((double) (evtCount)) / tDiff.count()
-                << std::endl;
     }
 
 private:
 
     void findNextEvent(Particle<DIM>& p1)
     {
+        std::cout << "void findNextEvent(Particle<DIM>&)" << std::endl;
         Line<DIM> tr1 = p1.getTrajectory();
         
         //Wall collisions
         for (std::size_t j = 0; j < walls.size(); j++)
         {
-            double t = intersection(tr1, walls[j], p1.getRadius(), p1.getLocalTime());
-            std::cout << "p1.getLocalTime()=" << p1.getLocalTime() << std::endl;
-            if (t < p1.getNextEvent().time)
+            // dt is the time of the next collision from now (currentTime)
+            double dt = intersection(tr1, walls[j], p1.getRadius(),
+                            p1.getLocalTime()-currentTime);
+            std::cout << "\twalls[j]=" << walls[j] << std::endl;
+            std::cout << "\tintersection(...)=" << dt << std::endl;
+            if (currentTime+dt < p1.getNextEvent().time)
             {
                 Event evt;
                 evt.type = EventType::WALL_COLLISION;
-                evt.time = t;
+                evt.time = currentTime+dt;
                 evt.otherIdx = j;
                 p1.setNextEvent(evt);
-                std::cout << evt << std::endl;
+                std::cout << "\t * " << evt << std::endl;
             }
         }
         
@@ -363,21 +350,21 @@ private:
         indexes.push_back(grid.getNCells(0)*2+ic[1]*2+1);
         indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2);
         indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2+1);
-        double t;
+        double dt;
         for (int i : indexes) {
             std::cout << "i=" << i << std::endl;
             std::cout << "plane=" << *(grid.getPlane(i)) << std::endl;
-            t = intersection(tr1, *(grid.getPlane(i)), 0.0, 0.0);
+            dt = intersection(tr1, *(grid.getPlane(i)), 0.0, 0.0);
             // We ask 't > 0' because after moving a particle to a cell boundary
             // the next collision would be predicted for ever.
-            if (t > 1.0E-11) {
-                t += globalTime;
-                if (t < p1.getNextEvent().time) {
+            if (dt > 1.0E-11) {
+                if (currentTime+dt < p1.getNextEvent().time) {
                     Event evt;
                     evt.type = EventType::CELL_BOUNDARY;
-                    evt.time = t;
+                    evt.time = currentTime+dt;
                     evt.otherIdx = i;
                     p1.setNextEvent(evt);
+                    std::cout << evt << std::endl;
                 }
             }
         }
@@ -407,8 +394,6 @@ private:
             Particle<DIM>& p2 = particles[smallestEvent.otherIdx];
             //Ah shit, the other particle already has a collision scheduled,
             //so we're just going to cancel that stuff
-
-
             
             if (p2.getNextEvent().type == EventType::PARTICLE_COLLISION)
             {
@@ -477,6 +462,41 @@ private:
             }
         }
         
+        // Particle-cell
+        for (std::size_t i = 0; i < particles.size(); i++) {
+            
+            std::cout << "particle " << i << " with cells " << std::endl;
+            
+            Particle<DIM>& p1 = particles[i];
+            Line<DIM> tr1 = p1.getTrajectory();
+            
+            std::array<int, DIM> ic = grid.getIndexCoordsFromIndex(p1.cellIndex);
+
+            std::cout << "ic=(" << ic[0] << "," << ic[1] << "," << ic[2] << ")" << std::endl;
+            
+            std::vector<int> indexes;
+            indexes.push_back(ic[0]);
+            indexes.push_back(ic[0]+1);
+            indexes.push_back(grid.getNCells(0)*2+ic[1]);
+            indexes.push_back(grid.getNCells(0)*2+ic[1]+1);
+            indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]);
+            indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]+1);
+            
+            double t;
+            for (int i : indexes) {
+                std::cout << "i=" << i << std::endl;
+                t = intersection(tr1, *(grid.getPlane(i)), 0.0, 0.0);
+                if (t < p1.getNextEvent().time) {
+                    Event evt;
+                    evt.type = EventType::CELL_BOUNDARY;
+                    evt.time = t;
+                    evt.otherIdx = i;
+                    p1.setNextEvent(evt);
+                    std::cout << evt << std::endl;
+                }
+            }
+        }
+        
         // Particle-particle
         for (std::size_t i = 0; i < particles.size(); i++)
         {
@@ -525,39 +545,8 @@ private:
             }
         }
         
-        // Particle-cell
-        for (std::size_t i = 0; i < particles.size(); i++) {
-            
-            std::cout << "particle " << i << " with cells " << std::endl;
-            
-            Particle<DIM>& p1 = particles[i];
-            Line<DIM> tr1 = p1.getTrajectory();
-            
-            std::array<int, DIM> ic = grid.getIndexCoordsFromIndex(p1.cellIndex);
-
-            std::cout << "ic=(" << ic[0] << "," << ic[1] << "," << ic[2] << ")" << std::endl;
-            
-            std::vector<int> indexes;
-            indexes.push_back(ic[0]);
-            indexes.push_back(ic[0]+1);
-            indexes.push_back(grid.getNCells(0)*2+ic[1]);
-            indexes.push_back(grid.getNCells(0)*2+ic[1]+1);
-            indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]);
-            indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]+1);
-            
-            double t;
-            for (int i : indexes) {
-                std::cout << "i=" << i << std::endl;
-                t = intersection(tr1, *(grid.getPlane(i)), 0.0, 0.0);
-                if (t < p1.getNextEvent().time) {
-                    Event evt;
-                    evt.type = EventType::CELL_BOUNDARY;
-                    evt.time = t;
-                    evt.otherIdx = i;
-                    p1.setNextEvent(evt);
-                }
-            }
-        }
+        // Other events
+        eventQueue.push(&syncEvent);
     }
 } ;
 

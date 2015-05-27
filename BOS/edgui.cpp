@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
     std::mt19937_64 gen(0);
     std::normal_distribution<double> randDist(0,1);
     
-    Simulation<3> sim(0.10, 1000);
+    Simulation<3> sim(10.0, 20.0);
     
     double spacing = 0.03;
     double radius = 0.5;
@@ -235,9 +235,9 @@ int main(int argc, char** argv) {
 
         cam.render();
         //std::cout << sim.getLastEvenTime()<< std::endl;
-        sim.synchronise();
+        //sim.synchronise();
         ball.renderInstanced(sim.getParticles());
-        sim.queueFunction(0,sim.getLastEvenTime() + 1000.0);
+        sim.queueFunction(0,sim.getLastEvenTime() + 10.0);
         
         glfwSwapBuffers(win);
         glfwPollEvents();
@@ -248,7 +248,8 @@ int main(int argc, char** argv) {
             std::exit(0);
         }
     });
-    sim.queueFunction(funcNum,1000.0);
+    
+    //sim.queueFunction(syncEvent,10.0);
     sim.run();
     
     /*

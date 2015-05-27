@@ -14,3 +14,6 @@ add_test( SimulationUnitTest SimulationUnitTest )
 
 add_executable( GridUnitTest GridUnitTest.cpp )
 add_test( GridUnitTest GridUnitTest )
+
+add_executable( IntersectionUnitTest IntersectionUnitTest.cpp )
+add_test( IntersectionUnitTest IntersectionUnitTest )
