@@ -11,3 +11,6 @@ add_test( WallCollisionsUnitTest WallCollisionsUnitTest )
 
 add_executable( SimulationUnitTest SimulationUnitTest.cpp )
 add_test( SimulationUnitTest SimulationUnitTest )
+
+add_executable( GridUnitTest GridUnitTest.cpp )
+add_test( GridUnitTest GridUnitTest )

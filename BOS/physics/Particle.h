@@ -29,6 +29,7 @@ class Particle
 //private:
     public:
     int id;
+    int cellIndex;
     double localTime;
 
     Vector<DIM> position;
