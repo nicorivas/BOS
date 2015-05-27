@@ -12,6 +12,7 @@
 
 #include <cstdlib>
 #include <random>
+#include <iostream>
 
 using namespace std;
 
@@ -23,34 +24,62 @@ int main(int argc, char** argv) {
     std::mt19937_64 gen(0);
     std::normal_distribution<double> randDist(0,1);
     
-    Vector<3> domainOrigin;
-    Vector<3> domainEnd;
+    Vector<3> domainOrigin({0.0, 0.0, 0.0});
+    Vector<3> domainEnd({5.0, 10.0, 15.0});
+    Vector<3> cellSize({1.0, 1.0, 1.0});
+    
     std::vector<Particle<3> > particles;
     
-    particles.push_back({0, {1.0, 1.0, 1.0}, {randDist(gen), randDist(gen), randDist(gen)}, 0.5, 0});
+    particles.push_back({0, {0.5, 0.5, 0.5}, {randDist(gen), randDist(gen), randDist(gen)}, 0.5, 0});
     
-    Grid<3> grid({1.0,1.0,1.0});
+    Grid<3> grid(cellSize);
     grid.init(&domainOrigin, &domainEnd, &particles);
     
-    /*
-    Simulation<3> sim(100,1000);
+    if (grid.getCellSize() == cellSize)
+        std::cout << "grid.getCellSize() OK" << std::endl;
+    else
+        return 1;
     
-    double lx = 5.0;
-    double ly = 5.0;
-    double lz = 5.0;
+    std::cout << "grid.getNCells() = (" << grid.getNCells()[0] << "," << grid.getNCells()[1] << "," << grid.getNCells()[2] << ")" << std::endl;
+    std::cout << "grid.getNCells(n) = (" << grid.getNCells(0) << "," << grid.getNCells(1) << "," << grid.getNCells(2) << ")" << std::endl;
+    unsigned int n;
+    for (n = 0; n < grid.getNCells(0)*2+grid.getNCells(1)*2+grid.getNCells(2)*2; n++) {
+        std::cout << "grid.getPlane() = (" << (*grid.getPlane(n)) << std::endl;
+    }
+
+    std::cout << "grid.getMaxParticlesPerCell() = " << grid.getMaxParticlesPerCell() << std::endl;
     
-    sim.addWall({{ 0, 0, 0},{ 1, 0, 0}});
-    sim.addWall({{ 0, 0, 0},{ 0, 1, 0}});
-    sim.addWall({{ 0, 0, 0},{ 0, 0, 1}});
-    sim.addWall({{lx,ly,lz},{-1, 0, 0}});
-    sim.addWall({{lx,ly,lz},{ 0,-1, 0}});
-    sim.addWall({{lx,ly,lz},{ 0, 0,-1}});
+    std::cout << "grid.getNumberOfCells() = " << grid.getNumberOfCells();
+    if (grid.getNumberOfCells() == grid.getNCells(0)*grid.getNCells(1)*grid.getNCells(2)) {
+        std::cout << " OK" << std::endl;
+    } else {
+        std::cout << " Error" << std::endl;
+        return 1;
+    }
     
-    sim.addParticle({0,
-        {randDist(gen)*4.5+0.5, randDist(gen)*4.5+0.5, randDist(gen)*4.5+0.5},
-        {randDist(gen), randDist(gen), randDist(gen)},
-        0.5, 0});
-    */
+    for (n = 0; n < grid.getNumberOfCells(); n++) {
+        std::cout << "(" <<
+                grid.getIndexCoordsFromIndex(n)[0] << "," <<
+                grid.getIndexCoordsFromIndex(n)[1] << "," <<
+                grid.getIndexCoordsFromIndex(n)[2] << ")" << std::endl;
+    }
+    
+    // Check getCellIndexFromPosition
+    Vector<3> pos({0.1,0.1,0.1});
+    int ci = grid.getCellIndexFromPosition(pos);
+    std::cout << pos << "=" << ci << "=" << "(" <<
+                grid.getIndexCoordsFromIndex(ci)[0] << "," <<
+                grid.getIndexCoordsFromIndex(ci)[1] << "," <<
+                grid.getIndexCoordsFromIndex(ci)[2] << ")" << std::endl;
+            
+    
+    // Check if particles are correctly located
+    ci = particles[0].cellIndex;
+    std::cout << ci << "=" << "(" <<
+                grid.getIndexCoordsFromIndex(ci)[0] << "," <<
+                grid.getIndexCoordsFromIndex(ci)[1] << "," <<
+                grid.getIndexCoordsFromIndex(ci)[2] << ")" << std::endl;
+    
     return 0;
 }
 

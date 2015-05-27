@@ -29,6 +29,9 @@ double intersection(Line<DIM> l, Plane<DIM> plane, double d, double dt) {
     double lineDist =   dot(lineInPlaneSpace, plane.getNormal());
     double directDist = dot(l.getDir()      , plane.getNormal());
     
+    //std::cout << lineDist << std::endl;
+    //std::cout << directDist << std::endl;
+    
     //lineDist is negative, so we need to take the distance from the other side
     if (lineDist < 0) {
         lineDist *= -1;
@@ -43,12 +46,19 @@ double intersection(Line<DIM> l, Plane<DIM> plane, double d, double dt) {
     
     double t = -(lineDist - d) / directDist;
     
-    std::cout << "Intersection time=" << t << std::endl;
+    //std::cout << "Intersection time=" << t << std::endl;
     
     //In case we're slightly smaller than 0, it's because we're within the
     //radius of the cylinder. In that case there will still be a collision
     //but we need it ASAP. (and we can't go back in time)
-    return t > 0.0 ? t : 0.0;
+    if (t > 0.0) {
+        return t;
+    } else {
+        std::cout << "line =" << l << std::endl;
+        std::cout << "line =" << l.getOrig() + l.getDir() * dt << std::endl;
+        std::cout << "plane=" << plane << std::endl;
+        return 0.0;
+    }
 }
 
 /**

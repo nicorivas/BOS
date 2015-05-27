@@ -108,6 +108,20 @@ public:
         return (*this) * (1/d);
     }
     
+    bool operator==(const Vector<DIM> &other) const {
+        for (unsigned int i = 0; i < DIM; i++) {
+            if (array[i] != other[i]) return false;
+        }
+        return true;
+    }
+    
+    bool operator!=(const Vector<DIM> &other) const {
+        for (unsigned int i = 0; i < DIM; i++) {
+            if (array[i] != other[i]) return true;
+        }
+        return false;
+    }
+    
     double lengthSq() const {
         return dot(*this, *this);
     }
