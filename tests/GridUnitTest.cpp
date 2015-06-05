@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     
     // Check getCellIndexFromPosition
     Vector<3> pos({0.1,0.1,0.1});
-    int ci = grid.getCellIndexFromPosition(pos);
+    int ci = 0;//grid.getCellIndexFromPosition(pos);
     std::cout << pos << "=" << ci << "=" << "(" <<
                 grid.getIndexCoordsFromIndex(ci)[0] << "," <<
                 grid.getIndexCoordsFromIndex(ci)[1] << "," <<

@@ -42,9 +42,12 @@ class Grid {
      * ------------------------------------------------
      * 
      */
+    Vector<DIM> domainOrigin;
+    Vector<DIM> domainEnd;
     Vector<DIM> cellSize;                   // Sizes of the cells in each dir.
     std::array<unsigned int, DIM> nCells;   // Number of cells in each direction
     std::vector<unsigned int> list;         // Particles in each cell.
+    std::vector<unsigned int> neighbors;    // Map of cellIndex to all neighbors
     std::vector<Plane<DIM> > planes;        // Planes for each cell (for intersection)
     unsigned int maxParticlesPerCell;
     unsigned long int numberOfCells;
@@ -56,13 +59,12 @@ private:
         std::array<unsigned int, DIM> arg;
         for (int i = 0; i < DIM; i++) {
             arg[i] = (int)(std::floor(pos[i]/cellSize[i]));
-            std::cout << arg[i] << std::endl;
         }
         return hash(arg);
     }
         
     // Hash function where the keys is a DIM-dimensional array of unsigned
-    // ints (the indexes of cell to which the particle corresponds to), and
+    // ints (the indexes of cell to which the particle belongs to), and
     // returns a unique id.
     int hash(std::array<unsigned int, DIM> in) const {
         int r = 0;
@@ -70,10 +72,27 @@ private:
         for (int i = 0; i < DIM; i++) {
             tmp = in[i];
             for (int j = 0; j < i; j++) {
-                tmp *= nCells[j]*maxParticlesPerCell;
+                tmp *= nCells[j];
             }
             r += tmp;
         }
+        return r;
+        /*
+        return ix +
+               iy*nCells[0]*maxParticlesPerCell + 
+               iz*nCells[0]*nCells[1]*maxParticlesPerCell*maxParticlesPerCell;
+        */
+    }
+    
+    int hash(int ix, int iy, int iz) const {
+        if (ix < 0 || ix >= nCells[0])
+            return numberOfCells;
+        if (iy < 0 || iy >= nCells[1])
+            return numberOfCells;
+        if (iz < 0 || iz >= nCells[2])
+            return numberOfCells;
+
+        int r = ix + nCells[0]*iy + nCells[0]*nCells[1]*iz;
         return r;
         /*
         return ix +
@@ -88,7 +107,8 @@ public:
         cellSize = grid_.cellSize;
     }
     
-    Grid(Vector<DIM> cellSize): cellSize(cellSize) {
+    Grid(Vector<DIM> dO, Vector<DIM> dE, Vector<DIM> cellSize):
+        domainOrigin(dO), domainEnd(dE), cellSize(cellSize) {
         //assert(cellSize.size() == DIM);
     }
     
@@ -126,8 +146,7 @@ public:
     
     // Compute the number of elements obtained by the domain tessellation with 
     // n-orthotopes of sizes given by cellSize;
-    int init(Vector<DIM> * domainOrigin, Vector<DIM> * domainEnd,
-            std::vector< Particle<DIM> > * particles) {
+    int init(std::vector< Particle<DIM> > * particles) {
            
         // This would need the size of the smallest particle.
         maxParticlesPerCell = 3;
@@ -136,7 +155,7 @@ public:
         Vector<DIM> length;
         for (int i = 0; i < DIM; i++) {
             // abs because some fucker could create domains with negative regions
-            length[i] = std::abs((*domainEnd)[i]-(*domainOrigin)[i]);
+            length[i] = std::abs((domainEnd)[i]-(domainOrigin)[i]);
         }
         numberOfCells = 1;
         for (unsigned int i = 0; i < DIM; i++) {
@@ -185,22 +204,64 @@ public:
         // I use specifically 'unsigned int' for the limit, as the size
         // type somehow didn't work (it gave different results in this line
         // and when comparing, just ahead in the while loop)
-        //list.assign(numberOfCells, std::numeric_limits<unsigned int>::max());
-        list.assign(numberOfCells*maxParticlesPerCell, std::numeric_limits<unsigned int>::max());
+        // We add +1 because we want cells that are always empty, so that out
+        // of bounds indexes point to this cell (three of them to simplify fors)
+        list.assign((numberOfCells+1)*maxParticlesPerCell, std::numeric_limits<unsigned int>::max());
+        for (unsigned int iz = 0; iz < nCells[2]; iz++) {
+            for (unsigned int iy = 0; iy < nCells[1]; iy++) {
+                for (unsigned int ix = 0; ix < nCells[0]; ix++) {
+                    neighbors.push_back(hash(ix-1,iy-1,iz-1));
+                    neighbors.push_back(hash(ix+0,iy-1,iz-1));
+                    neighbors.push_back(hash(ix+1,iy-1,iz-1));
+                    neighbors.push_back(hash(ix-1,iy+0,iz-1));
+                    neighbors.push_back(hash(ix+0,iy+0,iz-1));
+                    neighbors.push_back(hash(ix+1,iy+0,iz-1));
+                    neighbors.push_back(hash(ix-1,iy+1,iz-1));
+                    neighbors.push_back(hash(ix+0,iy+1,iz-1));
+                    neighbors.push_back(hash(ix+1,iy+1,iz-1));
+                    
+                    neighbors.push_back(hash(ix-1,iy-1,iz+0));
+                    neighbors.push_back(hash(ix+0,iy-1,iz+0));
+                    neighbors.push_back(hash(ix+1,iy-1,iz+0));
+                    neighbors.push_back(hash(ix-1,iy+0,iz+0));
+                    //neighbors.push_back(hash(ix+0,iy+0,iz+0));
+                    neighbors.push_back(hash(ix+1,iy+0,iz+0));
+                    neighbors.push_back(hash(ix-1,iy+1,iz+0));
+                    neighbors.push_back(hash(ix+0,iy+1,iz+0));
+                    neighbors.push_back(hash(ix+1,iy+1,iz+0));
+                    
+                    neighbors.push_back(hash(ix-1,iy-1,iz+1));
+                    neighbors.push_back(hash(ix+0,iy-1,iz+1));
+                    neighbors.push_back(hash(ix+1,iy-1,iz+1));
+                    neighbors.push_back(hash(ix-1,iy+0,iz+1));
+                    neighbors.push_back(hash(ix+0,iy+0,iz+1));
+                    neighbors.push_back(hash(ix+1,iy+0,iz+1));
+                    neighbors.push_back(hash(ix-1,iy+1,iz+1));
+                    neighbors.push_back(hash(ix+0,iy+1,iz+1));
+                    neighbors.push_back(hash(ix+1,iy+1,iz+1));
+                }
+            }
+        }
         
         // Locate particles in cell
         unsigned int listIndex; // use 2 to avoid confusion
         for (Particle<DIM>& p : *particles) {
-            //std::cout << p.getPosition() << std::endl;
+            std::cout << "Locating particles in cell" << std::endl;
+            
             unsigned int cellIndex = getCellIndexFromPosition(p.getPosition());
             p.cellIndex = cellIndex;
-            listIndex = cellIndex;
+            
+            listIndex = cellIndex*maxParticlesPerCell;
             int c = 0; // collision counter
             while (list[listIndex] != std::numeric_limits<unsigned int>::max()) {
                 listIndex++;
                 c++;
             }
             list[listIndex] = p.getID();
+            
+            std::cout << p << std::endl;
+            std::cout << "cellIndex = " << cellIndex << std::endl;
+            std::cout << "list[listIndex] = " << list[listIndex] << std::endl;
         }
         return 0;
     }
@@ -213,23 +274,27 @@ public:
         
         // Remove particle from the list
         cellIndex = event->getParticle<DIM>()->cellIndex;
-        listIndex = cellIndex;
-        while (list[listIndex] != event->getParticle<DIM>()->getID() && listIndex < numberOfCells*maxParticlesPerCell) {
-            listIndex++;
+        listIndex = cellIndex*maxParticlesPerCell;
+        int c = 0;
+        while (list[listIndex+c] != event->getParticle<DIM>()->getID() && c < maxParticlesPerCell) {
+            c++;
+        }
+        if (c == maxParticlesPerCell) {
+            std::cout << "We tried to remove an unfound particle" << std::endl;
         }
         list[listIndex] = std::numeric_limits<std::size_t>::max();
 
         // Get direction of moving from wall normal
         Vector<DIM> dirs = {1.0, 1.0*nCells[0], 1.0*nCells[0]*nCells[1]};
-        std::cout << "listIndex=" << listIndex << std::endl;
+        std::cout << "cellIndex=" << cellIndex << std::endl;
         cellIndex = cellIndex + (int)(dot(planes[event->otherIdx].getNormal(),-dirs));
-        std::cout << "listIndex=" << listIndex << std::endl;
+        std::cout << "cellIndex=" << cellIndex << std::endl;
         
         event->getParticle<DIM>()->cellIndex = cellIndex;
         
         // Add to list at proper position
-        int c = 0;
-        listIndex = cellIndex;
+        c = 0;
+        listIndex = cellIndex*maxParticlesPerCell;
         while (list[listIndex] != std::numeric_limits<unsigned int>::max()) {
             listIndex++;
             c++;
@@ -248,41 +313,21 @@ public:
     
     // getNeighbors, given a particle (pointer), returns a list of
     // particles (pointers) which are in the vicinity of particle's current cell
-    std::vector<Particle<DIM>* > getNeighbors(Particle<DIM>* particle)
+    std::vector<int> getNeighbors(Particle<DIM>* particle)
     {
-        std::vector<Particle<DIM>* > neighbors;
-        Vector<DIM> currentPosition = particle->getPosition();
-        std::array<unsigned int, DIM> in;
-        
-        for (unsigned int i = 0; i < DIM; i++)
-        {
-            in[i] = (int)(std::round(currentPosition[i]/cellSize[i]));
-        }
-        
-        // the 26(27) directions
-        std::array<std::array<int, DIM>, 3> dira;
-        for (int dim = 0; dim < DIM; dim++) {
-            for (int dir = -1; dir <= 1; dir++) {
-                dira[dim][dir+1] = dir;
-            }
-        }
-        
-        std::array<unsigned int, DIM> position;
-        for (int i = 0; i < 3; i++) // 3 directions
-        {
-            for (int j = 0; j < DIM; j++)
-            {
-                position[j] = in[j]+dira[j][i];
-            }
-            int listIndex = hash(position);
+        std::cout << "\tgetNeighbors(Particle<DIM>* particle)" << std::endl;
+        std::vector<int> neighborsIndex;       
+        for (int i = 0; i < 26; i++) {
+            int cell = neighbors[(particle->cellIndex)*26+i];
             int c = 0;
-            while (list[listIndex] != 0 && c < maxParticlesPerCell) {
-                neighbors.push_back(list[listIndex]);
-                listIndex++;
+            //std::cout << "\t cell=" << cell << std::endl;
+            if (list[cell*maxParticlesPerCell+c] != std::numeric_limits<unsigned int>::max() && c < maxParticlesPerCell) {
+                neighborsIndex.push_back(list[cell*maxParticlesPerCell+c]);
+                std::cout << "\t list[i*maxParticlesPerCell+c="<<i*maxParticlesPerCell+c<<"]=" << list[cell*maxParticlesPerCell+c] << std::endl;
                 c++;
             }
         }
-        return neighbors;
+        return neighborsIndex;
     }
 };
 
