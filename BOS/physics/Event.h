@@ -35,6 +35,7 @@ public:
     std::size_t otherIdx;
     EventType type;
     
+    
     /**
      * This function is potentially evil. Only call this on events ACTUALLY within a particle.
      * @return 

@@ -95,11 +95,8 @@ static void cursorFunc(GLFWwindow * win, double x, double y) {
     }
 }
 
-/*
- * 
- */
-int main(int argc, char** argv) {
-
+static void vis() {
+    /*
     //Window pointer
     GLFWwindow* win;
 
@@ -149,7 +146,8 @@ int main(int argc, char** argv) {
     glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
     ShaderProgram shader;
-    shader.link();  shader.addShader(ShaderType::Vertex, vertexEDSRC, sizeof(vertexEDSRC));
+    shader.link();
+    shader.addShader(ShaderType::Vertex, vertexEDSRC, sizeof(vertexEDSRC));
     shader.addShader(ShaderType::Fragment, fragmentSRC, sizeof(fragmentSRC));
 
     shader.use();
@@ -169,22 +167,55 @@ int main(int argc, char** argv) {
     
     ball.subdivide(3);
     ball.compile(true);
+    */
+      
+    /*
+    cam.move({1.0, 1.0, -10});
+    int funcNum = sim.addFunction([&](Simulation<3>& sim) {
+        //std::cout << "CALLBACK!" << std::endl;
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
+        cam.move(movedir);
+
+        cam.render();
+        //std::cout << sim.getLastEvenTime()<< std::endl;
+        //sim.synchronise();
+        ball.renderInstanced(sim.getParticles());
+        sim.queueFunction(0,sim.getLastEvenTime() + 10.0);
+        
+        glfwSwapBuffers(win);
+        glfwPollEvents();
+        
+        if (glfwWindowShouldClose(win)) {
+            glfwDestroyWindow(win);
+            glfwTerminate();
+            std::exit(0);
+        }
+    });
+    */
+}
+
+/*
+ * 
+ */
+int main(int argc, char** argv) {
     
     std::mt19937_64 gen(0);
-    std::normal_distribution<double> randDist(0,1);
+    std::uniform_real_distribution<double> randDist(-1,1);
     
-    Simulation<3> sim(10.0, 20.0);
+    Simulation<3> sim(10.0, 10000.0);
     
     double spacing = 0.03;
     double radius = 0.5;
     int n = 0;
     int i = 0, j = 0, k = 0;
     double px, py, pz;
-    int nmax = 1;
-    double packing_fraction = 0.1;
-    double lx = 5.0;//pow(nmax*4.0/3.0*M_PI*pow(radius+spacing,3.0)/packing_fraction,1.0/3.0)*1.0;
-    double ly = 5.0;//lx*1.0;
-    double lz = 5.0;//lx*1.0;
+    int nmax = 2;
+    double lx = 3.0;
+    double ly = 3.0;
+    double lz = 3.0;
     
     sim.addWall({{ 0, 0, 0},{ 1, 0, 0}});
     sim.addWall({{ 0, 0, 0},{ 0, 1, 0}});
@@ -214,62 +245,18 @@ int main(int argc, char** argv) {
             std::cerr << "Particle don't fit inside walls" << std::endl;
             exit(1);
         }
+        sim.addParticle({{px, py, 0.75}, {randDist(gen), randDist(gen), 0.0}, radius, 0});
         n++;
-        //std::cout << n << std::endl;
-        sim.addParticle({n, {px, py, pz}, {randDist(gen), randDist(gen), randDist(gen)}, 0.5, 0});
+        //sim.addParticle({n, {2.5+randDist(gen), 2.5, 2.5+randDist(gen)}, {randDist(gen), 0.0, randDist(gen)}, 0.5, 0});
+        //sim.addParticle({n, {2.5, 2.5, 0.75}, {0.0, 0.0, 1.0}, 0.5, 0});
     }
     
     std::cout << "Total number of particles=" << sim.getParticles().size() << std::endl;
     
     //sim.addParticle({0, {0.2, 0.2, -0.2}, {0.4, 0, 0.2}, 0.05, 0});
     //sim.addParticle({1, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});
-    
-    cam.move({1.0, 1.0, -10});
-    int funcNum = sim.addFunction([&](Simulation<3>& sim) {
-        //std::cout << "CALLBACK!" << std::endl;
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        
-        cam.move(movedir);
-
-        cam.render();
-        //std::cout << sim.getLastEvenTime()<< std::endl;
-        //sim.synchronise();
-        ball.renderInstanced(sim.getParticles());
-        sim.queueFunction(0,sim.getLastEvenTime() + 10.0);
-        
-        glfwSwapBuffers(win);
-        glfwPollEvents();
-        
-        if (glfwWindowShouldClose(win)) {
-            glfwDestroyWindow(win);
-            glfwTerminate();
-            std::exit(0);
-        }
-    });
-    
-    //sim.queueFunction(syncEvent,10.0);
+    sim.createGrid({0.0,0.0,0.0},{lx,ly,lz},{radius*2.0,radius*2.0,radius*2.0});
     sim.run();
-    
-    /*
-    while (!glfwWindowShouldClose(win)) {
-
-        // clear the buffers
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // draw...
-        cam.move(movedir);
-
-        cam.render();
-       // ball.renderInstanced(vec);
-        
-        glfwSwapBuffers(win);
-        glfwPollEvents();
-    }
-    glfwDestroyWindow(win);
-
-    glfwTerminate();
-    */
 
     return 0;
 }
