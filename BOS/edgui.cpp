@@ -37,7 +37,6 @@ static void resizeFunc(GLFWwindow * win, int w, int h) {
     cam.setProjection((float) M_PI_2, 1000.f, 0.001f, w, h);
 }
 
-
 static void keyFunc(GLFWwindow * win, int key, int scan, int action, int mod) {
     if (action == GLFW_RELEASE) {
         switch (key) {
@@ -205,17 +204,17 @@ int main(int argc, char** argv) {
     std::mt19937_64 gen(0);
     std::uniform_real_distribution<double> randDist(-1,1);
     
-    Simulation<3> sim(10.0, 10000.0);
+    Simulation<3> sim(100000.0, 10000.0);
     
     double spacing = 0.03;
     double radius = 0.5;
     int n = 0;
     int i = 0, j = 0, k = 0;
     double px, py, pz;
-    int nmax = 2;
-    double lx = 3.0;
-    double ly = 3.0;
-    double lz = 3.0;
+    int nmax = 4;
+    double lx = 5.0;
+    double ly = 5.0;
+    double lz = 5.0;
     
     sim.addWall({{ 0, 0, 0},{ 1, 0, 0}});
     sim.addWall({{ 0, 0, 0},{ 0, 1, 0}});
@@ -253,8 +252,10 @@ int main(int argc, char** argv) {
     
     std::cout << "Total number of particles=" << sim.getParticles().size() << std::endl;
     
-    //sim.addParticle({0, {0.2, 0.2, -0.2}, {0.4, 0, 0.2}, 0.05, 0});
-    //sim.addParticle({1, {0.4, 0.2, -0.2}, {0.2, 0, 0.2}, 0.05, 0});
+    //sim.addParticle({{3.2, 2.5, 2.5}, {-0.4, 0.0, 0.0}, 0.5, 0});
+    //sim.addParticle({{3.2, 3.8, 2.5}, { 0.0,-2.0, 0.0}, 0.5, 0});
+    //sim.addParticle({{1.9, 2.5, 2.5}, {+0.5, 0.0, 0.0}, 0.5, 0});
+    
     sim.createGrid({0.0,0.0,0.0},{lx,ly,lz},{radius*2.0,radius*2.0,radius*2.0});
     sim.run();
 

@@ -27,12 +27,13 @@ class Particle;
 class Event {
 public:
     Event() : time(std::numeric_limits<double>::infinity()),
-            otherIdx(0), type(EventType::INVALID) {}
-    Event(double time, std::size_t otherIdx, EventType type)
-            : time(time), otherIdx(otherIdx), type(type) { }
+            ownerId(0), otherId(0), type(EventType::INVALID) {}
+    Event(double time, std::size_t ownerId, std::size_t otherId, EventType type)
+            : time(time), ownerId(ownerId), otherId(otherId), type(type) { }
     
     double time;
-    std::size_t otherIdx;
+    std::size_t ownerId;
+    std::size_t otherId;
     EventType type;
     
     
@@ -52,7 +53,7 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const Event& evt) {
-    os << "Event {.type=";
+    os << "Event {t=";
     switch(evt.type) {
         case EventType::PARTICLE_COLLISION:
             os << 'P';
@@ -80,10 +81,10 @@ std::ostream& operator<<(std::ostream& os, const Event& evt) {
         && evt.type != EventType::INVALID
         && evt.type != EventType::SYNC
         && evt.type != EventType::RESCALE) {
-        os << " .id=" << evt.otherIdx;
+        os << " own=" << evt.ownerId;
+        os << " oth=" << evt.otherId;
     }
-    
-    os << " .t=" << evt.time << "}";
+    os << " t=" << evt.time << "}";
     return os;
 }
 

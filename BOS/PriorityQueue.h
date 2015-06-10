@@ -11,6 +11,7 @@
 #include <vector>
 #include <functional>
 
+#define DEBUG_MODE
 #ifdef DEBUG_MODE
 #include <iostream>
 #endif
@@ -168,6 +169,14 @@ public:
             std::cout << t << '\n';
         }
         std::cout << std::endl;
+    }
+    
+    std::vector<T> getlist() const {
+        std::vector<T> vec; 
+        for (const T& t : container) {
+            vec.push_back(t);
+        }
+        return vec;
     }
     
     bool validate() const {
