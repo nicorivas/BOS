@@ -52,16 +52,6 @@ class Grid {
     unsigned int maxParticlesPerCell;
     unsigned long int numberOfCells;
 private:
-    
-    // Given a position in physical space, return an index (one dimensional),
-    // of the corresponding position in list (cell index + number of particles).
-    unsigned int getCellIndexFromPosition(Vector<DIM> pos) const {
-        std::array<unsigned int, DIM> arg;
-        for (int i = 0; i < DIM; i++) {
-            arg[i] = (int)(std::floor(pos[i]/cellSize[i]));
-        }
-        return hash(arg);
-    }
         
     // Hash function where the keys is a DIM-dimensional array of unsigned
     // ints (the indexes of cell to which the particle belongs to), and
@@ -101,6 +91,17 @@ private:
         */
     }
 public:
+    
+    // Given a position in physical space, return an index (one dimensional),
+    // of the corresponding position in list (cell index + number of particles).
+    unsigned int getCellIndexFromPosition(Vector<DIM> pos) const {
+        std::array<unsigned int, DIM> arg;
+        for (int i = 0; i < DIM; i++) {
+            arg[i] = (int)(std::floor(pos[i]/cellSize[i]));
+        }
+        return hash(arg);
+    }
+    
     Grid() { }
     
     Grid(const Grid& grid_) {
@@ -207,6 +208,8 @@ public:
         // We add +1 because we want cells that are always empty, so that out
         // of bounds indexes point to this cell (three of them to simplify fors)
         list.assign((numberOfCells+1)*maxParticlesPerCell, std::numeric_limits<unsigned int>::max());
+        
+        // Determine neighbors
         for (unsigned int iz = 0; iz < nCells[2]; iz++) {
             for (unsigned int iy = 0; iy < nCells[1]; iy++) {
                 for (unsigned int ix = 0; ix < nCells[0]; ix++) {
@@ -224,7 +227,7 @@ public:
                     neighbors.push_back(hash(ix+0,iy-1,iz+0));
                     neighbors.push_back(hash(ix+1,iy-1,iz+0));
                     neighbors.push_back(hash(ix-1,iy+0,iz+0));
-                    //neighbors.push_back(hash(ix+0,iy+0,iz+0));
+                    neighbors.push_back(hash(ix+0,iy+0,iz+0));
                     neighbors.push_back(hash(ix+1,iy+0,iz+0));
                     neighbors.push_back(hash(ix-1,iy+1,iz+0));
                     neighbors.push_back(hash(ix+0,iy+1,iz+0));
@@ -253,11 +256,10 @@ public:
             
             listIndex = cellIndex*maxParticlesPerCell;
             int c = 0; // collision counter
-            while (list[listIndex] != std::numeric_limits<unsigned int>::max()) {
-                listIndex++;
+            while (list[listIndex+c] != std::numeric_limits<unsigned int>::max() && c < maxParticlesPerCell) {
                 c++;
             }
-            list[listIndex] = p.getID();
+            list[listIndex+c] = p.getID();
             
             std::cout << p << std::endl;
             std::cout << "cellIndex = " << cellIndex << std::endl;
@@ -275,19 +277,20 @@ public:
         // Remove particle from the list
         cellIndex = event->getParticle<DIM>()->cellIndex;
         listIndex = cellIndex*maxParticlesPerCell;
-        int c = 0;
-        while (list[listIndex+c] != event->getParticle<DIM>()->getID() && c < maxParticlesPerCell) {
+        unsigned int c = 0;
+        while (list[listIndex+c] != event->ownerId && c < maxParticlesPerCell) {
             c++;
         }
         if (c == maxParticlesPerCell) {
             std::cout << "We tried to remove an unfound particle" << std::endl;
+            exit(0);
         }
-        list[listIndex] = std::numeric_limits<std::size_t>::max();
+        list[listIndex+c] = std::numeric_limits<unsigned int>::max();
 
         // Get direction of moving from wall normal
         Vector<DIM> dirs = {1.0, 1.0*nCells[0], 1.0*nCells[0]*nCells[1]};
         std::cout << "cellIndex=" << cellIndex << std::endl;
-        cellIndex = cellIndex + (int)(dot(planes[event->otherIdx].getNormal(),-dirs));
+        cellIndex = cellIndex + (int)(dot(planes[event->otherId].getNormal(),-dirs));
         std::cout << "cellIndex=" << cellIndex << std::endl;
         
         event->getParticle<DIM>()->cellIndex = cellIndex;
@@ -295,18 +298,16 @@ public:
         // Add to list at proper position
         c = 0;
         listIndex = cellIndex*maxParticlesPerCell;
-        while (list[listIndex] != std::numeric_limits<unsigned int>::max()) {
-            listIndex++;
+        while (list[listIndex+c] != std::numeric_limits<unsigned int>::max() && c < maxParticlesPerCell) {
             c++;
         }
-        if (c > maxParticlesPerCell) {
+        if (c == maxParticlesPerCell) {
             // This either shouldn't be allowed, or something special
             // should be done, as inserting a link to other list oder so;
             std::cerr << "A collision occurred in the list of cells" << std::endl;
-            return -1;
+            exit(0);
         }
-        
-        list[listIndex] = event->getParticle<DIM>()->getID();
+        list[listIndex+c] = event->ownerId;
         
         return 1;
     }
@@ -317,14 +318,14 @@ public:
     {
         std::cout << "\tgetNeighbors(Particle<DIM>* particle)" << std::endl;
         std::vector<int> neighborsIndex;       
-        for (int i = 0; i < 26; i++) {
-            int cell = neighbors[(particle->cellIndex)*26+i];
-            int c = 0;
+        for (int i = 0; i < 27; i++) {
+            int cell = neighbors[(particle->cellIndex)*27+i];
             //std::cout << "\t cell=" << cell << std::endl;
-            if (list[cell*maxParticlesPerCell+c] != std::numeric_limits<unsigned int>::max() && c < maxParticlesPerCell) {
-                neighborsIndex.push_back(list[cell*maxParticlesPerCell+c]);
-                std::cout << "\t list[i*maxParticlesPerCell+c="<<i*maxParticlesPerCell+c<<"]=" << list[cell*maxParticlesPerCell+c] << std::endl;
-                c++;
+            for (int c = 0; c < maxParticlesPerCell; c++) {
+                if (list[cell*maxParticlesPerCell+c] != std::numeric_limits<unsigned int>::max()) {
+                    neighborsIndex.push_back(list[cell*maxParticlesPerCell+c]);
+                    std::cout << "\t list[cell*maxParticlesPerCell+c="<<cell*maxParticlesPerCell+c<<"]=" << list[cell*maxParticlesPerCell+c] << std::endl;
+                }
             }
         }
         return neighborsIndex;

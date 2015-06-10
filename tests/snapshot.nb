@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[      5852,        162]
-NotebookOptionsPosition[      5490,        144]
-NotebookOutlinePosition[      5842,        160]
-CellTagsIndexPosition[      5799,        157]
+NotebookDataLength[     23248,        561]
+NotebookOptionsPosition[     22466,        529]
+NotebookOutlinePosition[     22819,        545]
+CellTagsIndexPosition[     22776,        542]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -23,73 +23,201 @@ Cell[BoxData[
   RowBox[{"GetSnapshot", "[", "n_", "]"}], ":=", 
   RowBox[{"ReadList", "[", 
    RowBox[{
-    RowBox[{"\"\</Users/nicorivas/Software/BOS2/BOS/build/snapsot_\>\"", "<>", 
+    RowBox[{"\"\</Users/nicorivas/Software/BOS2/BOS/build/snapshot_\>\"", "<>", 
      RowBox[{"ToString", "[", "n", "]"}], "<>", "\"\<.dat\>\""}], ",", 
     RowBox[{"{", 
-     RowBox[{"Number", ",", "Number", ",", "Number"}], "}"}]}], 
-   "]"}]}]], "Input",
- CellChangeTimes->{{3.642404902370542*^9, 3.64240492166043*^9}}],
+     RowBox[{
+     "Number", ",", "Number", ",", "Number", ",", "Number", ",", "Number", 
+      ",", "Number"}], "}"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.642404902370542*^9, 3.64240492166043*^9}, 
+   3.64240560659377*^9, {3.642939763432843*^9, 3.6429397665092087`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"nn", "=", 
+   RowBox[{"Length", "[", 
+    RowBox[{
+    "FileNames", "[", 
+     "\"\</Users/nicorivas/Software/BOS2/BOS/build/snapshot_*\>\"", "]"}], 
+    "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6424357065789757`*^9, 3.642435729825995*^9}}],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
- RowBox[{"Row", "[", 
+ RowBox[{"GetSnapshot", "[", "7", "]"}]], "Input",
+ CellChangeTimes->{{3.642418846071451*^9, 3.6424188910427628`*^9}, {
+  3.642418935955707*^9, 3.642418948149767*^9}, {3.642419046002411*^9, 
+  3.6424190460927773`*^9}, {3.642422393830241*^9, 3.642422406952361*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
   RowBox[{"{", 
-   RowBox[{
-    RowBox[{"ListPlot", "[", 
-     RowBox[{
+   RowBox[{"3.78472`", ",", "2.5`", ",", "4.45924`"}], "}"}], "}"}]], "Output",\
+
+ CellChangeTimes->{{3.642418848391815*^9, 3.642418891400363*^9}, {
+   3.642418936461466*^9, 3.6424189483747168`*^9}, 3.6424190465257463`*^9, 
+   3.642419812306344*^9, 3.642420839659828*^9, {3.64242239416186*^9, 
+   3.64242240756955*^9}}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ShowSnapshot", "[", "n_", "]"}], ":=", 
+  RowBox[{"Row", "[", 
+   RowBox[{"{", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"ListPlot", "[", 
       RowBox[{
-       RowBox[{"GetSnapshot", "[", "1", "]"}], "[", 
-       RowBox[{"[", 
-        RowBox[{"All", ",", 
-         RowBox[{"{", 
-          RowBox[{"1", ",", "3"}], "}"}]}], "]"}], "]"}], ",", 
-      RowBox[{"PlotRange", "\[Rule]", 
        RowBox[{"{", 
         RowBox[{
-         RowBox[{"{", 
-          RowBox[{"0", ",", "5"}], "}"}], ",", 
-         RowBox[{"{", 
-          RowBox[{"0", ",", "5"}], "}"}]}], "}"}]}], ",", 
-      RowBox[{"Frame", "\[Rule]", "True"}], ",", 
-      RowBox[{"AspectRatio", "\[Rule]", "1"}], ",", 
-      RowBox[{"ImageSize", "\[Rule]", "300"}], ",", 
-      RowBox[{"PlotMarkers", "\[Rule]", 
-       RowBox[{"Graphics", "[", 
-        RowBox[{
-         RowBox[{"Circle", "[", "]"}], ",", 
-         RowBox[{"ImageSize", "\[Rule]", 
-          RowBox[{
-           RowBox[{"300", "/", "5"}], "*", "0.5", "*", "2"}]}]}], "]"}]}]}], 
-     "]"}], ",", 
-    RowBox[{"ListPlot", "[", 
-     RowBox[{
+         RowBox[{
+          RowBox[{"GetSnapshot", "[", "n", "]"}], "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", 
+            RowBox[{"{", 
+             RowBox[{"1", ",", "2"}], "}"}]}], "]"}], "]"}], ",", 
+         RowBox[{
+          RowBox[{"GetSnapshot", "[", "n", "]"}], "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", 
+            RowBox[{"{", 
+             RowBox[{"4", ",", "5"}], "}"}]}], "]"}], "]"}]}], "}"}], ",", 
+       RowBox[{"PlotRange", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"0", ",", "5"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"0", ",", "5"}], "}"}]}], "}"}]}], ",", 
+       RowBox[{"Frame", "\[Rule]", "True"}], ",", 
+       RowBox[{"AspectRatio", "\[Rule]", "1"}], ",", 
+       RowBox[{"ImageSize", "\[Rule]", "300"}], ",", 
+       RowBox[{"PlotMarkers", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"Graphics", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"Black", ",", 
+              RowBox[{"Disk", "[", "]"}]}], "}"}], ",", 
+            RowBox[{"ImageSize", "\[Rule]", 
+             RowBox[{
+              RowBox[{"300", "/", "5"}], "*", "0.5", "*", "2"}]}]}], "]"}], 
+          ",", 
+          RowBox[{"Graphics", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"Red", ",", 
+              RowBox[{"Circle", "[", "]"}]}], "}"}], ",", 
+            RowBox[{"ImageSize", "\[Rule]", 
+             RowBox[{
+              RowBox[{"300", "/", "5"}], "*", "0.5", "*", "2"}]}]}], "]"}]}], 
+         "}"}]}]}], "]"}], ",", 
+     RowBox[{"ListPlot", "[", 
       RowBox[{
-       RowBox[{"GetSnapshot", "[", "1", "]"}], "[", 
-       RowBox[{"[", 
-        RowBox[{"All", ",", 
-         RowBox[{"{", 
-          RowBox[{"1", ",", "2"}], "}"}]}], "]"}], "]"}], ",", 
-      RowBox[{"PlotRange", "\[Rule]", 
        RowBox[{"{", 
         RowBox[{
-         RowBox[{"{", 
-          RowBox[{"0", ",", "5"}], "}"}], ",", 
-         RowBox[{"{", 
-          RowBox[{"0", ",", "5"}], "}"}]}], "}"}]}], ",", 
-      RowBox[{"Frame", "\[Rule]", "True"}], ",", 
-      RowBox[{"AspectRatio", "\[Rule]", "1"}], ",", 
-      RowBox[{"ImageSize", "\[Rule]", "300"}], ",", 
-      RowBox[{"PlotMarkers", "\[Rule]", 
-       RowBox[{"Graphics", "[", 
+         RowBox[{
+          RowBox[{"GetSnapshot", "[", "n", "]"}], "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", 
+            RowBox[{"{", 
+             RowBox[{"1", ",", "3"}], "}"}]}], "]"}], "]"}], ",", 
+         RowBox[{
+          RowBox[{"GetSnapshot", "[", "n", "]"}], "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", 
+            RowBox[{"{", 
+             RowBox[{"4", ",", "6"}], "}"}]}], "]"}], "]"}]}], "}"}], ",", 
+       RowBox[{"PlotRange", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"0", ",", "5"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"0", ",", "5"}], "}"}]}], "}"}]}], ",", 
+       RowBox[{"Frame", "\[Rule]", "True"}], ",", 
+       RowBox[{"AspectRatio", "\[Rule]", "1"}], ",", 
+       RowBox[{"ImageSize", "\[Rule]", "300"}], ",", 
+       RowBox[{"PlotMarkers", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"Graphics", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"Black", ",", 
+              RowBox[{"Disk", "[", "]"}]}], "}"}], ",", 
+            RowBox[{"ImageSize", "\[Rule]", 
+             RowBox[{
+              RowBox[{"300", "/", "5"}], "*", "0.5", "*", "2"}]}]}], "]"}], 
+          ",", 
+          RowBox[{"Graphics", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"Red", ",", 
+              RowBox[{"Circle", "[", "]"}]}], "}"}], ",", 
+            RowBox[{"ImageSize", "\[Rule]", 
+             RowBox[{
+              RowBox[{"300", "/", "5"}], "*", "0.5", "*", "2"}]}]}], "]"}]}], 
+         "}"}]}]}], "]"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"ListPlot", "[", 
+      RowBox[{
+       RowBox[{"{", 
         RowBox[{
-         RowBox[{"Circle", "[", "]"}], ",", 
-         RowBox[{"ImageSize", "\[Rule]", 
-          RowBox[{
-           RowBox[{"300", "/", "5"}], "*", "0.5", "*", "2"}]}]}], "]"}]}]}], 
-     "]"}]}], "}"}], "]"}]], "Input",
- CellChangeTimes->{{3.64240483594106*^9, 3.6424048543490562`*^9}, {
-  3.642404932041254*^9, 3.6424049388565807`*^9}}],
+         RowBox[{
+          RowBox[{"GetSnapshot", "[", "n", "]"}], "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", 
+            RowBox[{"{", 
+             RowBox[{"2", ",", "3"}], "}"}]}], "]"}], "]"}], ",", 
+         RowBox[{
+          RowBox[{"GetSnapshot", "[", "n", "]"}], "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", 
+            RowBox[{"{", 
+             RowBox[{"5", ",", "6"}], "}"}]}], "]"}], "]"}]}], "}"}], ",", 
+       RowBox[{"PlotRange", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"0", ",", "5"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"0", ",", "5"}], "}"}]}], "}"}]}], ",", 
+       RowBox[{"Frame", "\[Rule]", "True"}], ",", 
+       RowBox[{"AspectRatio", "\[Rule]", "1"}], ",", 
+       RowBox[{"ImageSize", "\[Rule]", "300"}], ",", 
+       RowBox[{"PlotMarkers", "\[Rule]", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"Graphics", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"Black", ",", 
+              RowBox[{"Disk", "[", "]"}]}], "}"}], ",", 
+            RowBox[{"ImageSize", "\[Rule]", 
+             RowBox[{
+              RowBox[{"300", "/", "5"}], "*", "0.5", "*", "2"}]}]}], "]"}], 
+          ",", 
+          RowBox[{"Graphics", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"Red", ",", 
+              RowBox[{"Circle", "[", "]"}]}], "}"}], ",", 
+            RowBox[{"ImageSize", "\[Rule]", 
+             RowBox[{
+              RowBox[{"300", "/", "5"}], "*", "0.5", "*", "2"}]}]}], "]"}]}], 
+         "}"}]}]}], "]"}]}], "}"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.642418957260206*^9, 3.642418978253845*^9}, {
+  3.642939778160408*^9, 3.6429398701663637`*^9}, {3.642939973695342*^9, 
+  3.642940013737442*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"ShowSnapshot", "[", "10", "]"}]], "Input",
+ CellChangeTimes->{{3.6424189803661823`*^9, 3.642419077229744*^9}, {
+  3.642420844893654*^9, 3.6424208452484093`*^9}}],
 
 Cell[BoxData[
  TemplateBox[{GraphicsBox[{{}, {{{
@@ -100,9 +228,32 @@ Cell[BoxData[
          AbsoluteThickness[1.6]], 
         GeometricTransformationBox[
          InsetBox[
-          GraphicsBox[
-           CircleBox[{0, 0}], ImageSize -> 60.], {0., 0.}], {{{0.53, 
-         0.53}}, {{1.57137, 0.5}}}]}, {}}}, {}}, {
+          GraphicsBox[{
+            Hue[0.67, 0.6, 0.6], 
+            Directive[
+             PointSize[0.019444444444444445`], 
+             RGBColor[0.368417, 0.506779, 0.709798], 
+             AbsoluteThickness[1.6]], 
+            GrayLevel[0], 
+            DiskBox[{0, 0}]}, ImageSize -> 60.], {0., 0.}], {{{4.5, 
+         2.33435}}, {{3.9761, 3.23927}}, {{0.5, 2.02562}}}]}, {
+        Hue[0.9060679774997897, 0.6, 0.6], 
+        Directive[
+         PointSize[0.019444444444444445`], 
+         RGBColor[0.880722, 0.611041, 0.142051], 
+         AbsoluteThickness[1.6]], 
+        GeometricTransformationBox[
+         InsetBox[
+          GraphicsBox[{
+            Hue[0.9060679774997897, 0.6, 0.6], 
+            Directive[
+             PointSize[0.019444444444444445`], 
+             RGBColor[0.880722, 0.611041, 0.142051], 
+             AbsoluteThickness[1.6]], 
+            RGBColor[1, 0, 0], 
+            CircleBox[{0, 0}]}, ImageSize -> 60.], {0., 0.}], {{{4.5, 
+         2.33435}}, {{3.93116, 3.47453}}, {{1.13116, 
+         1.74877}}}]}, {}}}, {}}, {
     DisplayFunction -> Identity, PlotRangePadding -> {{0, 0}, {0, 0}}, 
      AxesOrigin -> {0, 0}, PlotRange -> {{0, 5}, {0, 5}}, DisplayFunction -> 
      Identity, AspectRatio -> 1, Axes -> {True, True}, 
@@ -122,9 +273,75 @@ Cell[BoxData[
          AbsoluteThickness[1.6]], 
         GeometricTransformationBox[
          InsetBox[
-          GraphicsBox[
-           CircleBox[{0, 0}], ImageSize -> 60.], {0., 0.}], {{{0.53, 
-         0.53}}, {{1.57137, 0.581627}}}]}, {}}}, {}}, {
+          GraphicsBox[{
+            Hue[0.67, 0.6, 0.6], 
+            Directive[
+             PointSize[0.019444444444444445`], 
+             RGBColor[0.368417, 0.506779, 0.709798], 
+             AbsoluteThickness[1.6]], 
+            GrayLevel[0], 
+            DiskBox[{0, 0}]}, ImageSize -> 60.], {0., 0.}], {{{4.5, 2.5}}, {{
+         3.9761, 2.5}}, {{0.5, 2.5}}}]}, {
+        Hue[0.9060679774997897, 0.6, 0.6], 
+        Directive[
+         PointSize[0.019444444444444445`], 
+         RGBColor[0.880722, 0.611041, 0.142051], 
+         AbsoluteThickness[1.6]], 
+        GeometricTransformationBox[
+         InsetBox[
+          GraphicsBox[{
+            Hue[0.9060679774997897, 0.6, 0.6], 
+            Directive[
+             PointSize[0.019444444444444445`], 
+             RGBColor[0.880722, 0.611041, 0.142051], 
+             AbsoluteThickness[1.6]], 
+            RGBColor[1, 0, 0], 
+            CircleBox[{0, 0}]}, ImageSize -> 60.], {0., 0.}], {{{4.5, 
+         2.5}}, {{3.93116, 2.5}}, {{1.13116, 2.5}}}]}, {}}}, {}}, {
+    DisplayFunction -> Identity, PlotRangePadding -> {{0, 0}, {0, 0}}, 
+     AxesOrigin -> {0, 0}, PlotRange -> {{0, 5}, {0, 5}}, DisplayFunction -> 
+     Identity, AspectRatio -> 1, Axes -> {True, True}, 
+     AxesLabel -> {None, None}, AxesOrigin -> {0, 0}, DisplayFunction :> 
+     Identity, Frame -> {{True, True}, {True, True}}, 
+     FrameLabel -> {{None, None}, {None, None}}, 
+     FrameTicks -> {{Automatic, Automatic}, {Automatic, Automatic}}, 
+     GridLines -> {None, None}, GridLinesStyle -> Directive[
+       GrayLevel[0.5, 0.4]], ImageSize -> 300, Method -> {}, 
+     PlotRange -> {{0, 5}, {0, 5}}, PlotRangeClipping -> True, 
+     PlotRangePadding -> {{0, 0}, {0, 0}}, Ticks -> {Automatic, Automatic}}],
+   GraphicsBox[{{}, {{{
+        Hue[0.67, 0.6, 0.6], 
+        Directive[
+         PointSize[0.019444444444444445`], 
+         RGBColor[0.368417, 0.506779, 0.709798], 
+         AbsoluteThickness[1.6]], 
+        GeometricTransformationBox[
+         InsetBox[
+          GraphicsBox[{
+            Hue[0.67, 0.6, 0.6], 
+            Directive[
+             PointSize[0.019444444444444445`], 
+             RGBColor[0.368417, 0.506779, 0.709798], 
+             AbsoluteThickness[1.6]], 
+            GrayLevel[0], 
+            DiskBox[{0, 0}]}, ImageSize -> 60.], {0., 0.}], {{{2.33435, 
+         2.5}}, {{3.23927, 2.5}}, {{2.02562, 2.5}}}]}, {
+        Hue[0.9060679774997897, 0.6, 0.6], 
+        Directive[
+         PointSize[0.019444444444444445`], 
+         RGBColor[0.880722, 0.611041, 0.142051], 
+         AbsoluteThickness[1.6]], 
+        GeometricTransformationBox[
+         InsetBox[
+          GraphicsBox[{
+            Hue[0.9060679774997897, 0.6, 0.6], 
+            Directive[
+             PointSize[0.019444444444444445`], 
+             RGBColor[0.880722, 0.611041, 0.142051], 
+             AbsoluteThickness[1.6]], 
+            RGBColor[1, 0, 0], 
+            CircleBox[{0, 0}]}, ImageSize -> 60.], {0., 0.}], {{{2.33435, 
+         2.5}}, {{3.47453, 2.5}}, {{1.74877, 2.5}}}]}, {}}}, {}}, {
     DisplayFunction -> Identity, PlotRangePadding -> {{0, 0}, {0, 0}}, 
      AxesOrigin -> {0, 0}, PlotRange -> {{0, 5}, {0, 5}}, DisplayFunction -> 
      Identity, AspectRatio -> 1, Axes -> {True, True}, 
@@ -138,11 +355,179 @@ Cell[BoxData[
      PlotRangePadding -> {{0, 0}, {0, 0}}, Ticks -> {Automatic, Automatic}}]},
   
   "RowDefault"]], "Output",
- CellChangeTimes->{{3.64240483625406*^9, 3.642404865939712*^9}, 
-   3.6424049392463713`*^9}]
+ CellChangeTimes->{{3.642418983064356*^9, 3.64241907780486*^9}, 
+   3.6424198137893972`*^9, {3.642420841832182*^9, 3.6424208455760508`*^9}, 
+   3.6424272545244913`*^9, 3.64293973639028*^9, {3.642939771058058*^9, 
+   3.6429398205425034`*^9}, {3.642939852848682*^9, 3.642939872786396*^9}, {
+   3.6429399760719147`*^9, 3.642940017426182*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"nn", "=", 
+   RowBox[{"Length", "[", 
+    RowBox[{
+    "FileNames", "[", 
+     "\"\</Users/nicorivas/Software/BOS2/BOS/build/snapshot_*\>\"", "]"}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Animate", "[", 
+  RowBox[{
+   RowBox[{"ShowSnapshot", "[", "i", "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"i", ",", "0", ",", 
+     RowBox[{"nn", "-", "1"}], ",", "1"}], "}"}], ",", 
+   RowBox[{"DisplayAllSteps", "\[Rule]", "True"}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.6424926673908043`*^9, 3.642492714805846*^9}}],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`i$$ = 35, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{
+      Hold[$CellContext`i$$], 0, 154, 1}}, Typeset`size$$ = {
+    900., {153., 158.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
+    Typeset`skipInitDone$$ = True, $CellContext`i$970995$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, "Variables" :> {$CellContext`i$$ = 0}, 
+      "ControllerVariables" :> {
+        Hold[$CellContext`i$$, $CellContext`i$970995$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, 
+      "Body" :> $CellContext`ShowSnapshot[$CellContext`i$$], 
+      "Specifications" :> {{$CellContext`i$$, 0, 154, 1, DisplayAllSteps -> 
+         True, AppearanceElements -> {
+          "ProgressSlider", "PlayPauseButton", "FasterSlowerButtons", 
+           "DirectionButton"}}}, 
+      "Options" :> {
+       ControlType -> Animator, AppearanceElements -> None, DefaultBaseStyle -> 
+        "Animate", DefaultLabelStyle -> "AnimateLabel", SynchronousUpdating -> 
+        True, ShrinkingDelay -> 10.}, "DefaultOptions" :> {}],
+     ImageSizeCache->{945., {190., 196.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Animate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{3.642492668630522*^9, 3.642492715200585*^9, 
+  3.642492784414399*^9, 3.6424929079905357`*^9, 3.642493077001506*^9, 
+  3.6429398779119053`*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"nn", "=", 
+   RowBox[{"Length", "[", 
+    RowBox[{
+    "FileNames", "[", 
+     "\"\</Users/nicorivas/Software/BOS2/BOS/build/snapshot_*\>\"", "]"}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Manipulate", "[", 
+  RowBox[{
+   RowBox[{"ShowSnapshot", "[", "i", "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"i", ",", "0", ",", 
+     RowBox[{"nn", "-", "1"}], ",", "1"}], "}"}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.64240483594106*^9, 3.6424048543490562`*^9}, {
+   3.642404932041254*^9, 3.642404960352256*^9}, {3.642405053868814*^9, 
+   3.642405055074396*^9}, {3.6424051087389183`*^9, 3.6424051128681307`*^9}, {
+   3.6424052986844187`*^9, 3.6424053551933002`*^9}, {3.6424054024007273`*^9, 
+   3.6424054030590487`*^9}, {3.642405584004957*^9, 3.642405584709683*^9}, {
+   3.642405691893318*^9, 3.6424057363590508`*^9}, {3.642418899332848*^9, 
+   3.642418929967924*^9}, {3.642418970613679*^9, 3.642418992141913*^9}, {
+   3.642419121422593*^9, 3.64241912349561*^9}, {3.642419157262828*^9, 
+   3.642419177615406*^9}, {3.6424208488378143`*^9, 3.642420863190889*^9}, {
+   3.642421031006967*^9, 3.6424210311834393`*^9}, {3.642422636814826*^9, 
+   3.642422637135539*^9}, {3.642422676942891*^9, 3.642422677216866*^9}, 
+   3.64242284627215*^9, {3.642427257374613*^9, 3.64242727777687*^9}, {
+   3.642427451172332*^9, 3.6424274513967733`*^9}, {3.642427672428129*^9, 
+   3.642427672717016*^9}, {3.642433412972886*^9, 3.6424334140672817`*^9}, 
+   3.642434764144867*^9, {3.642434831292553*^9, 3.642434831446653*^9}, 
+   3.642435178924149*^9, {3.6424357334883966`*^9, 3.6424357350311413`*^9}, {
+   3.6424357706343727`*^9, 3.642435771075238*^9}, {3.642492004042519*^9, 
+   3.642492004435267*^9}, {3.642492417772932*^9, 3.642492423892519*^9}, {
+   3.6424926103006697`*^9, 3.642492611106752*^9}, {3.6424990588588057`*^9, 
+   3.642499059572723*^9}, {3.642855583874042*^9, 3.642855584436549*^9}, {
+   3.64288071209589*^9, 3.642880717844285*^9}}],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`i$$ = 341, Typeset`show$$ = True, 
+    Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{
+      Hold[$CellContext`i$$], 0, 999, 1}}, Typeset`size$$ = {
+    900., {153., 158.}}, Typeset`update$$ = 0, Typeset`initDone$$, 
+    Typeset`skipInitDone$$ = True, $CellContext`i$987138$$ = 0}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, "Variables" :> {$CellContext`i$$ = 0}, 
+      "ControllerVariables" :> {
+        Hold[$CellContext`i$$, $CellContext`i$987138$$, 0]}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$}, 
+      "Body" :> $CellContext`ShowSnapshot[$CellContext`i$$], 
+      "Specifications" :> {{$CellContext`i$$, 0, 999, 1}}, "Options" :> {}, 
+      "DefaultOptions" :> {}],
+     ImageSizeCache->{945., {211., 216.}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    SynchronousInitialization->True,
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{
+  3.642404962474844*^9, 3.64240505542533*^9, 3.64240511344783*^9, 
+   3.642405286333202*^9, {3.642405328003953*^9, 3.642405355605402*^9}, 
+   3.642405403837346*^9, 3.6424054764590797`*^9, 3.642405522923595*^9, {
+   3.64240558499529*^9, 3.6424056086363287`*^9}, {3.642405693429579*^9, 
+   3.642405737077716*^9}, 3.642418765436352*^9, {3.642418905525217*^9, 
+   3.642418930156695*^9}, {3.642419119874424*^9, 3.642419178000292*^9}, {
+   3.642419820753646*^9, 3.64241985059903*^9}, {3.642420849456994*^9, 
+   3.642420863441517*^9}, 3.642420963881823*^9, 3.64242103149043*^9, 
+   3.642421244824417*^9, 3.642422126111074*^9, 3.642422213532686*^9, 
+   3.6424223597530317`*^9, {3.642422617649826*^9, 3.64242263769508*^9}, 
+   3.642422677656499*^9, 3.64242284670506*^9, {3.6424272588400087`*^9, 
+   3.6424272782440643`*^9}, {3.64242744250919*^9, 3.642427451679719*^9}, 
+   3.6424276731284437`*^9, 3.642429265880102*^9, 3.642429679262261*^9, 
+   3.6424333716649227`*^9, {3.6424334088619137`*^9, 3.642433414375578*^9}, 
+   3.6424334762961483`*^9, 3.642434655968916*^9, 3.642434698772764*^9, 
+   3.642434764616868*^9, 3.6424347977245827`*^9, 3.642434832199987*^9, 
+   3.6424349089906263`*^9, {3.642434940469348*^9, 3.642434948790036*^9}, 
+   3.642435030898526*^9, 3.642435179370727*^9, 3.642435226268523*^9, 
+   3.642435355457766*^9, 3.6424356287290783`*^9, 3.6424357354876127`*^9, 
+   3.642435771597739*^9, 3.642436035295205*^9, 3.642492006226297*^9, 
+   3.6424920572451353`*^9, 3.642492269507044*^9, {3.6424924192389383`*^9, 
+   3.6424924244442987`*^9}, 3.642492520610586*^9, 3.642493123638915*^9, 
+   3.642495691707546*^9, 3.642496568778955*^9, 3.6424966192904243`*^9, 
+   3.64249829374196*^9, 3.6424990600408297`*^9, 3.642499124512868*^9, 
+   3.642499291705855*^9, 3.6424993541287727`*^9, 3.642499448608203*^9, 
+   3.642851293811036*^9, 3.642855584882721*^9, 3.64285826312189*^9, 
+   3.642858830422483*^9, 3.642878788842854*^9, 3.642879593378202*^9, 
+   3.64287979891833*^9, 3.6428800982271442`*^9, 3.6428804408553057`*^9, 
+   3.642880718380127*^9, 3.6429398840959587`*^9, 3.642940022838431*^9, 
+   3.642941146169992*^9}]
 }, Open  ]]
 },
-WindowSize->{808, 587},
+WindowSize->{1226, 587},
 WindowMargins->{{4, Automatic}, {Automatic, 4}},
 FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (June 27, \
 2014)",
@@ -159,10 +544,24 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 435, 10, 63, "Input"],
+Cell[558, 20, 563, 12, 46, "Input"],
+Cell[1124, 34, 282, 8, 28, "Input"],
 Cell[CellGroupData[{
-Cell[1018, 34, 2057, 57, 114, "Input"],
-Cell[3078, 93, 2396, 48, 328, "Output"]
+Cell[1431, 46, 278, 4, 28, "Input"],
+Cell[1712, 52, 364, 8, 28, "Output"]
+}, Open  ]],
+Cell[2091, 63, 5479, 149, 165, "Input"],
+Cell[CellGroupData[{
+Cell[7595, 216, 185, 3, 28, "Input"],
+Cell[7783, 221, 6446, 140, 362, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[14266, 366, 561, 15, 46, "Input"],
+Cell[14830, 383, 1997, 40, 403, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[16864, 428, 1968, 34, 46, "Input"],
+Cell[18835, 464, 3615, 62, 478, "Output"]
 }, Open  ]]
 }
 ]

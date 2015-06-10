@@ -55,7 +55,7 @@ public:
     }
 
     Particle(Vector<DIM> position, Vector<DIM> velocity, double radius, double time = 0)
-    : id(0), localTime(time), position(position), velocity(velocity), radius(radius) { }
+    : localTime(time), position(position), velocity(velocity), radius(radius) { }
 
     int getID() const {
         return id;
@@ -84,6 +84,11 @@ public:
     Vector<DIM> getPosition() const
     {
         return position;
+    }
+    
+    Vector<DIM> getCurrentPosition(double dt) const
+    {
+        return position + velocity * dt;
     }
 
     void setPosition(Vector<DIM> newPosition)
@@ -156,12 +161,12 @@ public:
 
 template< unsigned int DIM >
 std::ostream& operator<<(std::ostream& os, Particle<DIM> p) {
-    os << "Particle {.id=" << p.getID() << " .pos=" << p.getPosition() 
-            << " .vel=" << p.getVelocity()
-            << " .t=" << p.getLocalTime() << " .r=" << p.getRadius() << std::endl;
+    os << "Particle {id=" << p.getID() << " x=" << p.getPosition() 
+            << " v=" << p.getVelocity()
+            << " t=" << p.getLocalTime() << " r=" << p.getRadius();
     
     if (p.getNextEvent().type != EventType::INVALID) {
-        os << "\t.evt=" << p.getNextEvent();
+        os << " e=" << p.getNextEvent();
     }
     
     os << "}";
