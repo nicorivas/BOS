@@ -8,7 +8,7 @@
 #ifndef VECTOR_H
 #define	VECTOR_H
 
-#include <hdf5/HDF5.h>
+//#include <hdf5/HDF5.h>
 
 #include <cassert>
 #include <cmath>
@@ -131,7 +131,7 @@ public:
         double len = std::sqrt(lengthSq());
         return *this / len;
     }
-    
+    /*
     static
     hid_t getTypeID() {
         hid_t typeID = H5Tcreate(H5T_COMPOUND, sizeof(Vector<DIM>));
@@ -146,8 +146,7 @@ public:
           H5Tinsert(typeID, "u", offsetof(Vector<DIM>,array[3]), dtype);
         return typeID;
     }
-    
-        
+    */  
 };
 
 template<unsigned int DIM>
