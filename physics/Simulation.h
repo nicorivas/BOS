@@ -55,8 +55,9 @@ public:
      * @param syncTime the time at which a syncEvent is needed
      */
     Simulation(double syncTime, double endTime)
-    : endTime(endTime), syncTime(syncTime), globalTime(0),
-            syncEvent(syncTime, 0, 0, EventType::SYNC)
+    : endTime(endTime), syncTime(syncTime),
+            syncEvent(syncTime, 0, 0, EventType::SYNC),
+            globalTime(0)
     {
     
     }
@@ -144,11 +145,9 @@ public:
                 exit(0);
             }
         }
-
         for (Event* evt : unownedEvents) {
             evt->time -= timeZero;
         }
-        
         currentTime = 0.0;
     }
 
@@ -160,7 +159,7 @@ public:
     {
         p.id = particles.size();
         particles.push_back(p);
-        std::cout << "Particle added=" << particles[particles.size()-1] << std::endl;
+        //std::cout << "Particle added=" << particles[particles.size()-1] << std::endl;
     }
 
     void addWall(Wall<DIM> wall)
@@ -225,7 +224,6 @@ public:
             indexes.push_back(grid.getNCells(0)*2+ic[1]*2+1);
             indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2);
             indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2+1);
-            double dt;
             std::array<int, 6> ll;
             for (int i=0; i < 6; i++) {
                 ll[i] = dot(grid.getPlane(indexes[i])->getPoint(),
@@ -260,25 +258,26 @@ public:
         eventCount = 0;
         
         while (globalTime < endTime && eventCount < 10000)
-        {
-            printParticles();
-            printQueue();
-            
+        {            
             Event* evt = eventQueue.top();
             eventQueue.pop();
             
-            snapshot();
-            
+            //printParticles();
+            //printQueue();   
             //checkCells();
+            snapshot();
             
             if (evt->time < currentTime)
             {
                 std::cout << "Exiting: event in the past:" << std::endl;
+                std::cout << "currentTime=" << currentTime;
+                std::cout << " globalTime=" << globalTime << std::endl;
                 std::cout << *evt << std::endl;
+                //evt->time = currentTime;
                 exit(0);
             }
             
-            std::cout << "\n*** (" << eventCount << ") " << *evt << std::endl;
+            //std::cout << "\n*** (" << eventCount << ") " << *evt << std::endl;
             
             switch (evt->type)
             {
@@ -286,21 +285,17 @@ public:
                 {   
                     Particle<DIM>& pB = particles[evt->otherId];
                     Particle<DIM>& pA = particles[evt->ownerId];
-                    
-                    std::cout << "\tpA.id=" << pA.getID() << " pB.id=" << pB.getID() <<
-                            " evt.otherId=" << evt->otherId <<
-                            " evt.ownerId=" << evt->ownerId << std::endl;
-                    
-                    std::cout << "\t" << pA << std::endl;
-                    std::cout << "\t" << pB << std::endl;
+
+                    //std::cout << "\t" << pA << std::endl;
+                    //std::cout << "\t" << pB << std::endl;
                     
                     pA.advance(evt->time-pA.localTime);
                     pB.advance(evt->time-pB.localTime);
                     globalTime += evt->time-currentTime;
                     currentTime = evt->time;
 
-                    std::cout << "\t" << pA << std::endl;
-                    std::cout << "\t" << pB << std::endl;
+                    //std::cout << "\t" << pA << std::endl;
+                    //std::cout << "\t" << pB << std::endl;
                     
                     Vector<DIM> d = pA.getPosition() - pB.getPosition();
                     d /= sqrt(dot(d, d)); //normalise
@@ -308,14 +303,14 @@ public:
                     pA.setVelocity(pA.getVelocity() - d * dot(v, d));
                     pB.setVelocity(pB.getVelocity() + d * dot(v, d));
 
-                    std::cout << "\t" << pA << std::endl;
-                    std::cout << "\t" << pB << std::endl;
+                    //std::cout << "\t" << pA << std::endl;
+                    //std::cout << "\t" << pB << std::endl;
                     
                     eventQueue.erase(&(pB.getNextEvent()));
                     pA.setNextEvent({});
                     pB.setNextEvent({});
                     
-                    printQueue();
+                    //printQueue();
                     
                     findNextEvent(pA);
                     findNextEvent(pB);
@@ -325,8 +320,8 @@ public:
                     // because of some three-particle swap. findNextEvent on a
                     // particle WITH an event, is a particularly bad idea :(
                     // Therefore, check.
-                    //if (p2.getNextEvent().type == EventType::INVALID)
-                    //  findNextEvent(p2);
+                    //if (pB.getNextEvent().type == EventType::INVALID)
+                    //    findNextEvent(pB);
 
                 }
                     break;
@@ -335,7 +330,7 @@ public:
                     Wall<DIM>& w = walls[evt->otherId];
                     Particle<DIM>& p = *(evt->getParticle<DIM>());
                     
-                    std::cout << "\t" << p << std::endl;
+                    //std::cout << "\t" << p << std::endl;
                     
                     p.advance(evt->time-p.localTime);
                     globalTime += evt->time-currentTime;
@@ -343,7 +338,7 @@ public:
                     
                     p.setVelocity(p.getVelocity() - 2 * dot(p.getVelocity(), w.getNormal()) * w.getNormal());
                     
-                    std::cout << "\t" << p << std::endl;
+                    //std::cout << "\t" << p << std::endl;
                     
                     p.setNextEvent({});
                     findNextEvent(p);
@@ -353,19 +348,20 @@ public:
                 {
                     Particle<DIM>& p = *(evt->getParticle<DIM>());
                     
-                    std::cout << p << std::endl;
+                    //std::cout << p << std::endl;
                     //std::cout << "p.cellIndex=" << p.cellIndex << std::endl;
                     
                     // I don't think this is necessary, we should try when
                     // the code is stable. As velocity doesn't change,
                     // collisions will anyway be correctly predicted.
-                    p.advance(evt->time-p.localTime);
+                    double etime = evt->time;
+                    p.advance(etime-p.localTime);
                     
                     grid.moveParticle(evt);
                     globalTime += evt->time-currentTime;
                     currentTime = evt->time;
                     
-                    std::cout << p << std::endl;
+                    //std::cout << p << std::endl;
                     //std::cout << "p.cellIndex=" << p.cellIndex << std::endl;
                     
                     p.setNextEvent({});
@@ -414,14 +410,13 @@ public:
 private:
 
     Event& findWallCollisions(Particle<DIM>& p) {
-        std::cout << "findWallCollisions(Particle<DIM>& p="<<p.getID()<<")" << std::endl;
+        //std::cout << "findWallCollisions(Particle<DIM>& p="<<p.getID()<<")" << std::endl;
         Line<DIM> tr = p.getTrajectory();
         for (std::size_t j = 0; j < walls.size(); j++) {
             // dt is the time of the next collision from now (currentTime)
             double dt = intersection(tr, walls[j], p.getRadius(),
                             currentTime-p.getLocalTime());
-            std::cout << "\twalls[j]=" << walls[j];
-            std::cout << " -> dt=" << dt << std::endl;
+            //std::cout << "\twalls[j]=" << walls[j] << " -> dt=" << dt << std::endl;
             if (currentTime+dt < p.getNextEvent().time) {
                 Event evt;
                 evt.type = EventType::WALL_COLLISION;
@@ -429,18 +424,17 @@ private:
                 evt.ownerId = p.getID();
                 evt.otherId = j;
                 p.setNextEvent(evt);
-                std::cout << "\t* PREDICTED * " << evt << std::endl;
+                //std::cout << "\t* PREDICTED * " << evt << std::endl;
             }
         }
         return p.getNextEvent();
     }
     
+    // Finds collisions with the corresponding planes in the grid.
     Event& findCellCollisions(Particle<DIM>& p) {
-        std::cout << "findCellCollisions(Particle<DIM>& p)" << std::endl;
-        // Cell collisions: find the corresponding planes of the cells to check
+        //std::cout << "findCellCollisions(Particle<DIM>& p="<<p.getID()<<")" << std::endl;
         
         Line<DIM> tr = p.getTrajectory();
-        std::cout << "\tparticle " << p.getID() << " with cells " << std::endl;          
         std::array<int, DIM> ic = grid.getIndexCoordsFromIndex(p.cellIndex);
         std::vector<int> indexes;
         indexes.push_back(ic[0]*2);
@@ -451,11 +445,11 @@ private:
         indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2+1);
         double dt;
         for (int i : indexes) {
-            std::cout << "\tplane=" << *(grid.getPlane(i)) << std::endl;
             dt = intersection(tr, *(grid.getPlane(i)), 0.0, currentTime-p.getLocalTime());
             // We ask 't > 0' because after moving a particle to a cell boundary
-            // the next collision would be predicted for ever.
-            if (dt > 1.0E-11) {
+            // the next collision would be predicted for ever. This is fragile;
+            // there must be a better way to do it.
+            if (dt > 1.0E-13) {
                 if (currentTime+dt < p.getNextEvent().time) {
                     Event evt;
                     evt.type = EventType::CELL_BOUNDARY;
@@ -463,27 +457,19 @@ private:
                     evt.ownerId = p.getID();
                     evt.otherId = i;
                     p.setNextEvent(evt);
-                    std::cout << "\t* PREDICTED * " << evt << std::endl;
+                    //std::cout << "\t* PREDICTED * " << evt << std::endl;
                 }
             }
         }
+        return p.getNextEvent();
     }
     
     Event& findParticleCollisions(Particle<DIM>& p1) { 
-        std::cout << "findParticleCollisions(Particle<DIM>& p1)" << std::endl;
-        
-        // TODO: not working for zero particles, creates a bug with the times
+        //std::cout << "findParticleCollisions(Particle<DIM>& p1)" << std::endl;
+        Event evt; // This event dies, as it is copied when added to particles
         Line<DIM> tr1 = p1.getTrajectory();
-        // This event will actually be copied when added to the particle,
-        // so it dies with this function.
-        Event evt;
-        bool found = false;
         
         std::vector<int> neighbors = grid.getNeighbors(&p1);
-        
-        //std::vector<int> neighbors = {0, 1, 2};
-        std::cout << "\tneighbors.size()=" << neighbors.size() << std::endl;
-        
         for (std::size_t i = 0; i < neighbors.size(); i++)
         {
             Particle<DIM>& p2 = particles[neighbors[i]];
@@ -491,14 +477,14 @@ private:
             if (p2.getID() == p1.getID())
                 continue;
             
-            std::cout << "\tneighbors[i="<<i<<"]=" << neighbors[i] << std::endl;
-            std::cout << "\tp2=" << p2 << std::endl;
+            //std::cout << "\tneighbors[i="<<i<<"]=" << neighbors[i] << std::endl;
+            //std::cout << "\tp2=" << p2 << std::endl;
 
             double dt = intersection(tr1, p2.getTrajectory(),
                                     (p1.getRadius() + p2.getRadius()) / 2.0,
                                      p1.getLocalTime() - p2.getLocalTime());
             
-            std::cout << "\tcurrentTime + dt="<<(currentTime+dt)<<" evt.time="<<evt.time<<" p1.getNextEvent().time="<<(p1.getNextEvent().time)<<std::endl;
+            //std::cout << "\tcurrentTime + dt="<<(currentTime+dt)<<" evt.time="<<evt.time<<" p1.getNextEvent().time="<<(p1.getNextEvent().time)<<std::endl;
             if (currentTime + dt < p1.getNextEvent().time &&
                 currentTime + dt < p2.getNextEvent().time)
             {
@@ -507,11 +493,10 @@ private:
                 evt.ownerId = p1.getID();
                 evt.otherId = p2.getID();
                 p1.setNextEvent(evt);
-                std::cout << "\t* PREDICTED * " << evt << std::endl;
-                found = true;
+                //std::cout << "\t* PREDICTED * " << evt << std::endl;
             }
         }
-
+        /*
         if (found)
         {
             Particle<DIM>& p2 = particles[evt.otherId];
@@ -570,8 +555,6 @@ private:
             }
             else
             {
-                std::cout << "\teh?" << std::endl;
-                //exit(0);
                 p1.setNextEvent(evt);
                 if (p2.getNextEvent().type != EventType::INVALID)
                     eventQueue.erase(&p2.getNextEvent());
@@ -589,31 +572,35 @@ private:
                 return p2.getNextEvent();
             }
         }
+        */
         return p1.getNextEvent();
     }
 
     void findNextEvent(Particle<DIM>& p) {
-        std::cout << "void findNextEvent(p.getID()="<<p.getID()<<")" << std::endl;
+        //std::cout << "void findNextEvent(p.getID()="<<p.getID()<<")" << std::endl;
         // See comment on initialPopulateEvents().
         Event * evt;
         evt = &findWallCollisions(p);
         evt = &findCellCollisions(p);
         evt = &findParticleCollisions(p);
-        std::cout << "eventQueue.push(evt=" << *evt << ")" << std::endl;
+        //std::cout << "eventQueue.push(evt=" << *evt << ")" << std::endl;
         eventQueue.push(evt);
     }
     
     void initialPopulateEvents() {
         // Pointer here, as the actual event is contained by the particles,
         // and the queue only contains the pointers.
-        Event * evt;
+        //Event * evt;
         for (std::size_t i = 0; i < particles.size(); i++)
         {
             Particle<DIM>& p = particles[i];
+            findNextEvent(p);
+            /*
             evt = &findWallCollisions(p);
             evt = &findCellCollisions(p);
             evt = &findParticleCollisions(p);
             eventQueue.push(evt);
+            */
         }
         // Other events
         eventQueue.push(&syncEvent);

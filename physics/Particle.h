@@ -17,60 +17,33 @@
 #include <GL/glew.h>
 #endif
 
-#include <hdf5/HDF5.h>
+//#include <hdf5/HDF5.h>
 
 template < unsigned int DIM >
 class Particle
 {
     template<unsigned int D2>
     friend class Simulation;
-    
     friend class Event;
-//private:
-    public:
+    
+private:
     int id;
-    int cellIndex;
     double localTime;
-
     Vector<DIM> position;
     Vector<DIM> velocity;
     double radius;
-    
+    int cellIndex;
     Event nextEvent;
+    
 public:
     
-    static hid_t getTypeID() {
-        HDF5Type idType  = ::getTypeID<decltype(Particle<DIM>::id)>();
-        HDF5Type fType   = ::getTypeID<decltype(Particle<DIM>::radius)>();
-        HDF5Type vecType = ::getTypeID<Vector<DIM> >();
-        
-        hid_t retVal = H5Tcreate(H5T_COMPOUND, sizeof(Particle<DIM>));
-        
-        H5Tinsert(retVal, "id", offsetof(Particle<DIM>, id), idType);
-        H5Tinsert(retVal, "position", offsetof(Particle<DIM>, position), vecType);
-        H5Tinsert(retVal, "velocity", offsetof(Particle<DIM>, velocity), vecType);
-        H5Tinsert(retVal, "radius", offsetof(Particle<DIM>, radius), fType);        
-        
-        return retVal;
-    }
-
     Particle(Vector<DIM> position, Vector<DIM> velocity, double radius, double time = 0)
     : localTime(time), position(position), velocity(velocity), radius(radius) { }
 
     int getID() const {
         return id;
     }
-    
-    void setTime(double time)
-    {
-        localTime = time;
-    }
-    
-    double getTime() const
-    {
-        return localTime;
-    }
-    // Should we have this duplicate names?
+
     void setLocalTime(double time)
     {
         localTime = time;
@@ -116,6 +89,26 @@ public:
         radius = newRadius;
     }
 
+    const Event& getNextEvent() const {
+        return nextEvent;
+    }
+    
+    Event& getNextEvent() {
+        return nextEvent;
+    }
+    
+    void setNextEvent(Event evt) {
+        nextEvent = evt;
+    } 
+    
+    int getCellIndex() const {
+        return cellIndex;
+    }
+    
+    void setCellIndex(int ci) {
+        cellIndex = ci;
+    }
+
     Line<DIM> getTrajectory() const {
         return {position, velocity};
     }
@@ -127,18 +120,6 @@ public:
     void advance(double dt) {
         position += velocity * dt;
         localTime += dt;
-    }
-    
-    const Event& getNextEvent() const {
-        return nextEvent;
-    }
-    
-    Event& getNextEvent() {
-        return nextEvent;
-    }
-    
-    void setNextEvent(Event evt) {
-        nextEvent = evt;
     }
     
 #ifndef NO_TOOLS
@@ -157,6 +138,22 @@ public:
         
     }
 #endif
+    /*
+    static hid_t getTypeID() {
+        HDF5Type idType  = ::getTypeID<decltype(Particle<DIM>::id)>();
+        HDF5Type fType   = ::getTypeID<decltype(Particle<DIM>::radius)>();
+        HDF5Type vecType = ::getTypeID<Vector<DIM> >();
+        
+        hid_t retVal = H5Tcreate(H5T_COMPOUND, sizeof(Particle<DIM>));
+        
+        H5Tinsert(retVal, "id", offsetof(Particle<DIM>, id), idType);
+        H5Tinsert(retVal, "position", offsetof(Particle<DIM>, position), vecType);
+        H5Tinsert(retVal, "velocity", offsetof(Particle<DIM>, velocity), vecType);
+        H5Tinsert(retVal, "radius", offsetof(Particle<DIM>, radius), fType);        
+        
+        return retVal;
+    }
+    */
 };
 
 template< unsigned int DIM >
