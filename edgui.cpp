@@ -11,6 +11,8 @@
 
 #include <math/Intersection.h>
 
+#include <input/Data.h>
+
 #include <chrono>
 #include <thread>
 #include <random>
@@ -32,13 +34,16 @@ int main(int argc, char** argv) {
     double ly = 5.0;
     double lz = 5.0;
     
+    Data<3> data;
+    //data.read("test.json", sim);
+    /*
     sim.addWall({{ 0, 0, 0},{ 1, 0, 0}});
     sim.addWall({{ 0, 0, 0},{ 0, 1, 0}});
     sim.addWall({{ 0, 0, 0},{ 0, 0, 1}});
     sim.addWall({{lx,ly,lz},{-1, 0, 0}});
     sim.addWall({{lx,ly,lz},{ 0,-1, 0}});
     sim.addWall({{lx,ly,lz},{ 0, 0,-1}});
-    
+    */
     while (n < nmax) {
         px = radius+spacing+2*(radius+spacing)*i;
         py = radius+spacing+2*(radius+spacing)*j;
@@ -60,10 +65,9 @@ int main(int argc, char** argv) {
             std::cerr << "Particle don't fit inside walls" << std::endl;
             exit(1);
         }
-        sim.addParticle({{px, py, 0.75}, {randDist(gen), randDist(gen), 0.0}, radius, 0});
+        //sim.addParticle({{px, py, 0.75}, {randDist(gen), randDist(gen), 0.0}, radius, 0});
+        sim.addParticle({{px, py, pz}, {randDist(gen), randDist(gen), randDist(gen)}, radius, 0});
         n++;
-        //sim.addParticle({n, {2.5+randDist(gen), 2.5, 2.5+randDist(gen)}, {randDist(gen), 0.0, randDist(gen)}, 0.5, 0});
-        //sim.addParticle({n, {2.5, 2.5, 0.75}, {0.0, 0.0, 1.0}, 0.5, 0});
     }
     
     std::cout << "Total number of particles=" << sim.getParticles().size() << std::endl;
@@ -77,4 +81,3 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-

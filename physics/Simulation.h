@@ -22,7 +22,10 @@
 //#include <queue>
 #include <set>
 #include <fstream>
+#include <sstream>
 #include <string>
+#include <cstdio>
+
 
 #define EVT_PROFILE_COUNT 100000
 
@@ -257,7 +260,7 @@ public:
         
         eventCount = 0;
         
-        while (globalTime < endTime && eventCount < 10000)
+        while (globalTime < endTime && eventCount < 100)
         {            
             Event* evt = eventQueue.top();
             eventQueue.pop();
