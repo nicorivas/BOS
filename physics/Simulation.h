@@ -13,6 +13,7 @@
 #include <math/Intersection.h>
 #include <physics/Wall.h>
 #include <physics/Grid.h>
+#include <input/Data.h>
 
 #include <PriorityQueue.h>
 
@@ -21,8 +22,8 @@
 #include <functional>
 //#include <queue>
 #include <set>
-#include <fstream>
-#include <sstream>
+//#include <fstream>
+//#include <sstream>
 #include <string>
 #include <cstdio>
 
@@ -40,29 +41,30 @@ private:
 
     Grid<DIM> grid;
 
-    int eventCount;
+    int eventNumber;
+    int eventNumberLimit;
     double endTime;
-    double syncTime;
     Event syncEvent;
     double currentTime;
     double globalTime;
+    
+    Data<3> data;
 
     PriorityQueue<Event*> eventQueue;
     std::set<Event*> unownedEvents;
 public:
 
     /**
-     * Constructs a Simulation object with a synchronisation event
-     * every syncTime seconds, which will end at endTime
-     * @param endTime the time at which this simulation will end
-     * @param syncTime the time at which a syncEvent is needed
+     * Constructs a Simulation object, data read from "file".
      */
-    Simulation(double syncTime, double endTime)
-    : endTime(endTime), syncTime(syncTime),
-            syncEvent(syncTime, 0, 0, EventType::SYNC),
-            globalTime(0)
+    Simulation(const std::string& file) : data(file, *this)
     {
-    
+        syncEvent= Event(data.syncTime, 0, 0, EventType::SYNC);
+        endTime = data.endTime;
+        globalTime = 0;
+        createGrid({0.0,0.0,0.0},
+        {data.domain[0],data.domain[1],data.domain[2]},
+        {data.particleRadius*2.0,data.particleRadius*2.0,data.particleRadius*2.0});
     }
     
     double getCurrentTime() const
@@ -167,11 +169,15 @@ public:
 
     void addWall(Wall<DIM> wall)
     {
+        std::cout << wall << std::endl;
         walls.push_back(wall);
     }
 
     void createGrid(Vector<DIM> domainOrigin, Vector<DIM> domainEnd, Vector<DIM> cellSize)
     {
+        std::cout << domainOrigin << std::endl;
+        std::cout << domainEnd << std::endl;
+        std::cout << cellSize << std::endl;
         grid = Grid<DIM>(domainOrigin, domainEnd, cellSize);
         grid.init(&particles);
     }
@@ -198,7 +204,7 @@ public:
     void snapshot()
     {
         std::ofstream myfile;
-        myfile.open ("snapshot_"+std::to_string(eventCount)+".dat");
+        myfile.open ("snapshot_"+std::to_string(eventNumber)+".dat");
         for (std::size_t i = 0; i < particles.size(); i++)
         {
             Particle<DIM>& p = particles[i];
@@ -215,59 +221,19 @@ public:
         myfile.close();
     }
     
-    void checkCells()
-    {
-        for (auto p : particles) {
-            Vector<DIM> pos = p.getPosition();
-            std::array<int, DIM> ic = grid.getIndexCoordsFromIndex(p.cellIndex);
-            std::vector<int> indexes;
-            indexes.push_back(ic[0]*2);
-            indexes.push_back(ic[0]*2+1);
-            indexes.push_back(grid.getNCells(0)*2+ic[1]*2);
-            indexes.push_back(grid.getNCells(0)*2+ic[1]*2+1);
-            indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2);
-            indexes.push_back(grid.getNCells(0)*2+grid.getNCells(1)*2+ic[2]*2+1);
-            std::array<int, 6> ll;
-            for (int i=0; i < 6; i++) {
-                ll[i] = dot(grid.getPlane(indexes[i])->getPoint(),
-                        abs(grid.getPlane(indexes[i])->getNormal()));
-                //std::cout << ll[i] << std::endl;
-            }
-            int prec = 10;
-            if (pos[0] - ll[0] < -std::numeric_limits<double>::epsilon()*prec ||
-                ll[1] - pos[0] < -std::numeric_limits<double>::epsilon()*prec ||
-                pos[1] - ll[2] < -std::numeric_limits<double>::epsilon()*prec ||
-                ll[3] - pos[1] < -std::numeric_limits<double>::epsilon()*prec ||
-                pos[2] - ll[4] < -std::numeric_limits<double>::epsilon()*prec ||
-                ll[5] - pos[2] < -std::numeric_limits<double>::epsilon()*prec)
-            {
-                std::cout << "ERROR" << pos << std::endl;
-                std::cout << -std::numeric_limits<double>::epsilon() << std::endl;
-                std::cout << pos[0] - ll[0] << std::endl;
-                std::cout << pos[1] - ll[2] << std::endl;
-                std::cout << pos[2] - ll[4] << std::endl;
-                std::cout << ll[1] - pos[0] << std::endl;
-                std::cout << ll[3] - pos[1] << std::endl;
-                std::cout << ll[5] - pos[2] << std::endl;
-                exit(0);
-            }
-        }
-    }
-    
-    void run()
+    int run()
     {
         initialPopulateEvents();
         
-        eventCount = 0;
+        eventNumber = 0;
         
-        while (globalTime < endTime && eventCount < 100)
-        {            
+        while (globalTime < endTime && eventNumber < eventNumberLimit)
+        {          
             Event* evt = eventQueue.top();
             eventQueue.pop();
             
             //printParticles();
             //printQueue();   
-            //checkCells();
             snapshot();
             
             if (evt->time < currentTime)
@@ -276,8 +242,7 @@ public:
                 std::cout << "currentTime=" << currentTime;
                 std::cout << " globalTime=" << globalTime << std::endl;
                 std::cout << *evt << std::endl;
-                //evt->time = currentTime;
-                exit(0);
+                return 1;
             }
             
             //std::cout << "\n*** (" << eventCount << ") " << *evt << std::endl;
@@ -317,15 +282,6 @@ public:
                     
                     findNextEvent(pA);
                     findNextEvent(pB);
-                    // Wow, that took a time to realise.
-                    // -> p1 findNextEvent might in some weird cases find a
-                    // combination where p2 actually gets assigned an event already,
-                    // because of some three-particle swap. findNextEvent on a
-                    // particle WITH an event, is a particularly bad idea :(
-                    // Therefore, check.
-                    //if (pB.getNextEvent().type == EventType::INVALID)
-                    //    findNextEvent(pB);
-
                 }
                     break;
                 case EventType::WALL_COLLISION:
@@ -373,22 +329,14 @@ public:
                     break;
                 case EventType::RESCALE:
                 {
-                    /*
-                    std::cout << "\n(" << eventCount << "," << evt->time << "," << globalTime << ") ";
-                    std::cout << "EventType::RESCALE" << std::endl;
-                    
-                    rescale();
-
-                    rescaleEvent.time += rescaleTime;
-                    eventQueue.push(&rescaleEvent);
-                    */
+                    //
                 }
                     break;
                 case EventType::SYNC:
                 {
                     synchronise(evt->time);
                     
-                    syncEvent.time += syncTime;
+                    syncEvent.time += data.syncTime;
                     eventQueue.push(&syncEvent);
                 }   
                     break;
@@ -404,10 +352,11 @@ public:
                     std::cerr << globalTime << std::endl;
                     std::cerr << "Invalid events?!?!?!" << std::endl;
                 }
-                    return;
+                    return 1;
             }
-            eventCount++;
+            eventNumber++;
         }
+        return 0;
     }
 
 private:
