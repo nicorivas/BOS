@@ -14,6 +14,7 @@
 #include <physics/Wall.h>
 #include <physics/Grid.h>
 #include <input/Data.h>
+#include <funcs/FunctionEvent.h>
 
 #include <PriorityQueue.h>
 
@@ -33,27 +34,36 @@
 template < unsigned int DIM >
 class Simulation
 {
-    friend bool testSynchronize();
+public:
+    typedef long long int lint;
 private:
     std::vector< Particle<DIM> > particles;
     std::vector< Wall<DIM> > walls;
-    std::vector< std::function<void(Simulation<DIM>&)> > funcTriggers;
+    std::vector< std::function<void(Simulation<DIM>&)> > fEvents_Event;
+    std::vector< std::function<void(Simulation<DIM>&)> > fEvents_WallPre;
+    std::vector< std::function<void(Simulation<DIM>&)> > fEvents_WallPost;
+    std::vector< std::function<void(Simulation<DIM>&)> > fEvents_ParticlePre;
+    std::vector< std::function<void(Simulation<DIM>&)> > fEvents_ParticlePost;
 
     Grid<DIM> grid;
 
-    int eventNumber;
-    int eventNumberLimit;
+    lint eventNumber;
+    lint eventNumberLimit;
     double endTime;
     Event syncEvent;
     double currentTime;
     double globalTime;
-    
-    Data<3> data;
 
+    std::function<void(Particle<DIM>&, Particle<DIM>&)> particleCollision;
+    std::function<void(Particle<DIM>&, Wall<DIM>&)> wallCollision;
+    
     PriorityQueue<Event*> eventQueue;
     std::set<Event*> unownedEvents;
 public:
-
+    
+    // Should we make this public?
+    Data<3> data;
+    
     /**
      * Constructs a Simulation object, data read from "file".
      */
@@ -65,6 +75,11 @@ public:
         createGrid({0.0,0.0,0.0},
         {data.domain[0],data.domain[1],data.domain[2]},
         {data.particleRadius*2.0,data.particleRadius*2.0,data.particleRadius*2.0});
+    }
+    
+    lint getEventNumber() const
+    {
+        return eventNumber;
     }
     
     double getCurrentTime() const
@@ -86,50 +101,65 @@ public:
     {
         return particles;
     }
-
+    
+    void setParticleCollisionModel(const std::function<void(Particle<DIM>&, Particle<DIM>&)>& func)
+    {
+        particleCollision = func;
+    }
+    
+    void setParticleCollisionModel(std::function<void(Particle<DIM>&, Particle<DIM>&)>&& func)
+    {
+        particleCollision = func;
+    }
+    
+    void setWallCollisionModel(const std::function<void(Particle<DIM>&, Wall<DIM>&)>& func)
+    {
+        wallCollision = func;
+    }
+    
+    void setWallCollisionModel(std::function<void(Particle<DIM>&, Wall<DIM>&)>&& func)
+    {
+        wallCollision = func;
+    }
+    
+    std::size_t addFunctionEvent(const FunctionEvent fe)
+    {
+        // Add functional events:
+        std::size_t idx = fEvents_Event.size();
+        fEvents_Event.emplace_back(fe.functionEventP_Event);
+        queueFunction(idx, 10.0);
+        
+        if (fe.doWallCollisionPre)
+            fEvents_WallPre.emplace_back(fe.functionEventP_WallPre);
+        if (fe.doWallCollisionPost)
+            fEvents_WallPost.emplace_back(fe.functionEventP_WallPost);
+        if (fe.doParticleCollisionPre)
+            fEvents_ParticlePre.emplace_back(fe.functionEventP_ParticlePre);
+        if (fe.doParticleCollisionPost)
+            fEvents_ParticlePost.emplace_back(fe.functionEventP_ParticlePost);
+        return idx;
+    }
+    
+    std::size_t addFunction(const std::function<void(Simulation&)>& func)
+    {
+        std::size_t idx = fEvents_Event.size();
+        fEvents_Event.emplace_back(func);
+        return idx;
+    }
+    
+    // Faster for adding lambda functions
     std::size_t addFunction(std::function<void(Simulation&)>&& func)
     {
-        std::size_t idx = funcTriggers.size();
-        funcTriggers.emplace_back(func);
+        std::size_t idx = fEvents_Event.size();
+        fEvents_Event.emplace_back(std::move(func));
         return idx;
     }
 
     void queueFunction(std::size_t func, double when)
     {
-        Event * evt = new Event(when - globalTime, func, EventType::FUNC_EVALUATION);
+        Event * evt = new Event(when, func, 0, EventType::FUNCTION);
         unownedEvents.insert(evt);
         eventQueue.push(evt);
-    }
-
-    /**
-     * \brief Rescales for more numerical precision
-     * 
-     * This function rescales the local times of the particles to be
-     * on average 0. This improves the numerical precision. Any offset will
-     * be added to globalTime.
-     */
-    void rescale()
-    {
-        double avg = 0;
-        for (const Particle<DIM>& p : particles)
-        {
-            avg += p.getLocalTime();
-        }
-        avg /= particles.size();
-
-        for (Particle<DIM>& p : particles)
-        {
-            p.setLocalTime(p.getLocalTime() - avg);
-            p.getNextEvent().time -= avg;
-        }
-
-        syncEvent.time -= avg;
-        for (Event* evt : unownedEvents)
-        {
-            evt->time -= avg;
-        }
-
-        globalTime += avg;
     }
 
     /**
@@ -172,15 +202,6 @@ public:
         std::cout << wall << std::endl;
         walls.push_back(wall);
     }
-
-    void createGrid(Vector<DIM> domainOrigin, Vector<DIM> domainEnd, Vector<DIM> cellSize)
-    {
-        std::cout << domainOrigin << std::endl;
-        std::cout << domainEnd << std::endl;
-        std::cout << cellSize << std::endl;
-        grid = Grid<DIM>(domainOrigin, domainEnd, cellSize);
-        grid.init(&particles);
-    }
     
     void printParticles()
     {
@@ -201,26 +222,6 @@ public:
         }
     }
     
-    void snapshot()
-    {
-        std::ofstream myfile;
-        myfile.open ("snapshot_"+std::to_string(eventNumber)+".dat");
-        for (std::size_t i = 0; i < particles.size(); i++)
-        {
-            Particle<DIM>& p = particles[i];
-            Vector<DIM> pos = p.getPosition();
-            //p.advance(currentTime-p.localTime); //uncomment if you want sync snapshots
-            myfile << pos[0] << " " 
-                   << pos[1] << " "
-                   << pos[2] << " ";
-            pos = p.getCurrentPosition(currentTime-p.localTime);
-            myfile << pos[0] << " " 
-                   << pos[1] << " "
-                   << pos[2] << std::endl;
-        }
-        myfile.close();
-    }
-    
     int run()
     {
         initialPopulateEvents();
@@ -234,7 +235,7 @@ public:
             
             //printParticles();
             //printQueue();   
-            snapshot();
+            //snapshot();
             
             if (evt->time < currentTime)
             {
@@ -244,122 +245,115 @@ public:
                 std::cout << *evt << std::endl;
                 return 1;
             }
+                        
+            handler(evt);
             
-            //std::cout << "\n*** (" << eventCount << ") " << *evt << std::endl;
-            
-            switch (evt->type)
-            {
-                case EventType::PARTICLE_COLLISION:
-                {   
-                    Particle<DIM>& pB = particles[evt->otherId];
-                    Particle<DIM>& pA = particles[evt->ownerId];
-
-                    //std::cout << "\t" << pA << std::endl;
-                    //std::cout << "\t" << pB << std::endl;
-                    
-                    pA.advance(evt->time-pA.localTime);
-                    pB.advance(evt->time-pB.localTime);
-                    globalTime += evt->time-currentTime;
-                    currentTime = evt->time;
-
-                    //std::cout << "\t" << pA << std::endl;
-                    //std::cout << "\t" << pB << std::endl;
-                    
-                    Vector<DIM> d = pA.getPosition() - pB.getPosition();
-                    d /= sqrt(dot(d, d)); //normalise
-                    Vector<DIM> v = pA.getVelocity() - pB.getVelocity();
-                    pA.setVelocity(pA.getVelocity() - d * dot(v, d));
-                    pB.setVelocity(pB.getVelocity() + d * dot(v, d));
-
-                    //std::cout << "\t" << pA << std::endl;
-                    //std::cout << "\t" << pB << std::endl;
-                    
-                    eventQueue.erase(&(pB.getNextEvent()));
-                    pA.setNextEvent({});
-                    pB.setNextEvent({});
-                    
-                    //printQueue();
-                    
-                    findNextEvent(pA);
-                    findNextEvent(pB);
-                }
-                    break;
-                case EventType::WALL_COLLISION:
-                {
-                    Wall<DIM>& w = walls[evt->otherId];
-                    Particle<DIM>& p = *(evt->getParticle<DIM>());
-                    
-                    //std::cout << "\t" << p << std::endl;
-                    
-                    p.advance(evt->time-p.localTime);
-                    globalTime += evt->time-currentTime;
-                    currentTime = evt->time;
-                    
-                    p.setVelocity(p.getVelocity() - 2 * dot(p.getVelocity(), w.getNormal()) * w.getNormal());
-                    
-                    //std::cout << "\t" << p << std::endl;
-                    
-                    p.setNextEvent({});
-                    findNextEvent(p);
-                }
-                    break;
-                case EventType::CELL_BOUNDARY:
-                {
-                    Particle<DIM>& p = *(evt->getParticle<DIM>());
-                    
-                    //std::cout << p << std::endl;
-                    //std::cout << "p.cellIndex=" << p.cellIndex << std::endl;
-                    
-                    // I don't think this is necessary, we should try when
-                    // the code is stable. As velocity doesn't change,
-                    // collisions will anyway be correctly predicted.
-                    double etime = evt->time;
-                    p.advance(etime-p.localTime);
-                    
-                    grid.moveParticle(evt);
-                    globalTime += evt->time-currentTime;
-                    currentTime = evt->time;
-                    
-                    //std::cout << p << std::endl;
-                    //std::cout << "p.cellIndex=" << p.cellIndex << std::endl;
-                    
-                    p.setNextEvent({});
-                    findNextEvent(p);
-                }
-                    break;
-                case EventType::RESCALE:
-                {
-                    //
-                }
-                    break;
-                case EventType::SYNC:
-                {
-                    synchronise(evt->time);
-                    
-                    syncEvent.time += data.syncTime;
-                    eventQueue.push(&syncEvent);
-                }   
-                    break;
-                case EventType::FUNC_EVALUATION:
-                {
-                    funcTriggers[evt->otherId](*this);
-                    unownedEvents.erase(evt);
-                    delete evt;
-                }
-                    break;
-                case EventType::INVALID:
-                {
-                    std::cerr << globalTime << std::endl;
-                    std::cerr << "Invalid events?!?!?!" << std::endl;
-                }
-                    return 1;
-            }
             eventNumber++;
         }
         return 0;
     }
+    
+    void handler(Event* evt) 
+    {   
+        //std::cout << "\n*** (" << eventCount << ") " << *evt << std::endl;
+        switch (evt->type)
+        {
+            case EventType::PARTICLE_COLLISION:
+            {   
+
+                Particle<DIM>& pB = particles[evt->otherId];
+                Particle<DIM>& pA = particles[evt->ownerId];
+
+                pA.advance(evt->time-pA.localTime);
+                pB.advance(evt->time-pB.localTime);
+                globalTime += evt->time-currentTime;
+                currentTime = evt->time;
+
+                for (auto fe : fEvents_ParticlePre)
+                    fe(*this);
+                
+                particleCollision(pA, pB);
+                
+                for (auto fe : fEvents_ParticlePost)
+                    fe(*this);
+
+                eventQueue.erase(&(pB.getNextEvent()));
+                pA.setNextEvent({});
+                pB.setNextEvent({});                    
+                findNextEvent(pA);
+                findNextEvent(pB);
+            }
+                break;
+            case EventType::WALL_COLLISION:
+            {
+                Wall<DIM>& w = walls[evt->otherId];
+                Particle<DIM>& p = *(evt->getParticle<DIM>());
+
+                p.advance(evt->time-p.localTime);
+                globalTime += evt->time-currentTime;
+                currentTime = evt->time;
+
+                for (auto fe : fEvents_WallPre)
+                    fe(*this);
+                
+                wallCollision(p, w);
+                
+                for (auto fe : fEvents_WallPost)
+                    fe(*this);
+
+                p.setNextEvent({});
+                findNextEvent(p);
+            }
+                break;
+            case EventType::CELL_BOUNDARY:
+            {
+                Particle<DIM>& p = *(evt->getParticle<DIM>());
+
+                // I don't think this is necessary, we should try when
+                // the code is stable. As velocity doesn't change,
+                // collisions will anyway be correctly predicted.
+                p.advance(evt->time-p.localTime);
+
+                grid.moveParticle(evt);
+                globalTime += evt->time-currentTime;
+                currentTime = evt->time;
+
+                p.setNextEvent({});
+                findNextEvent(p);
+            }
+                break;
+            case EventType::SYNC:
+            {
+                synchronise(evt->time);
+                syncEvent.time += data.syncTime;
+                eventQueue.push(&syncEvent);
+            }   
+                break;
+            case EventType::FUNCTION:
+            {
+                fEvents_Event[evt->otherId](*this);
+                unownedEvents.erase(evt);
+                delete evt;
+
+            }
+                break;
+            case EventType::INVALID:
+            {
+                std::cerr << globalTime << std::endl;
+                std::cerr << "Invalid events?!?!?!" << std::endl;
+            }
+        }
+    }
 
 private:
+    
+    void createGrid(Vector<DIM> domainOrigin, Vector<DIM> domainEnd, Vector<DIM> cellSize) {
+        std::cout << domainOrigin << std::endl;
+        std::cout << domainEnd << std::endl;
+        std::cout << cellSize << std::endl;
+        grid = Grid<DIM>(domainOrigin, domainEnd, cellSize);
+        grid.init(&particles);
+    }
 
     Event& findWallCollisions(Particle<DIM>& p) {
         //std::cout << "findWallCollisions(Particle<DIM>& p="<<p.getID()<<")" << std::endl;

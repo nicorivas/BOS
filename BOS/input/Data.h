@@ -14,6 +14,7 @@
 #include <sstream>
 #include <fstream>
 #include <random>
+#include <map>
 
 template<unsigned int DIM>
 class Simulation;
@@ -26,10 +27,10 @@ public:
     double particleRadius;  // Radii of the spherical (or disk) particles
     double syncTime;        // Period to call sync (see comments in sync funct.)
     double endTime;         // Total time of the simulation
+    rapidjson::Document docJson;
     Data(const std::string& file, Simulation<DIM>& sim)
     {
         using namespace rapidjson;
-        Document docJson;
         std::stringstream sstr;
 
         // We read the file to a string.
