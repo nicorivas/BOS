@@ -8,58 +8,57 @@
 #ifndef SNAPSHOT_H
 #define	SNAPSHOT_H
 
-#include <funcs/FunctionEvent.h>
-#include <funcs/FunctionProxy.h>
+#include <funcs/FunctionalEvent.h>
+#include <funcs/FunctionalProxy.h>
 #include <input/Data.h>
 
-class Snapshot: public FunctionEvent {
+class Snapshot: public FunctionalEvent {
     
 public:
     
     std::size_t count;
-    double period;
     
     Snapshot(Simulation<3>& sim) : count(0) {
-        period = sim.data.docJson["measure"]["mFields1D"]["frequency"].GetDouble();
-        doWallCollisionPre = true;
-        doWallCollisionPost = true;
-        doParticleCollisionPre = true;
-        doParticleCollisionPost = true;
+        time = sim.data.docJson["output"][0]["savePeriodInTime"].GetDouble();
+        doEvent = true;
+        doWallPre = false;
+        doWallPost = false;
+        doParticlePre = false;
+        doParticlePost = false;
+        doEndOfSimulation = true;
     }
     
-    void wallCollisionPre(Simulation<3>& sim)
+    void fEvent(Simulation<3>& sim)
+    {
+        sim.data.output(sim);
+        sim.queueFunction(0, sim.getCurrentTime()+time);
+        count++;
+    }
+    
+    void fWallPre(Simulation<3>& sim)
     {
         std::cout << "Wall collision Pre" << std::endl;
     }
-    /*
-    void particleCollisionPre(Simulation<3>& sim)
+    
+    void fWallPost(Simulation<3>& sim)
+    {
+        std::cout << "Wall collision Post" << std::endl;
+    }
+    
+    void fParticlePre(Simulation<3>& sim)
     {
         std::cout << "Particle collision Pre" << std::endl;
     }
-    */
     
-    void functionEvent(Simulation<3>& sim)
+    void fParticlePost(Simulation<3>& sim)
     {
-        std::ofstream myfile;
-        myfile.open ("snapshot_"+std::to_string(count)+".dat");
-        const std::vector<Particle<3> >& particles = sim.getParticles();
-        for (std::size_t i = 0; i < particles.size(); i++)
-        {
-            const Particle<3>& p = particles[i];
-            Vector<3> pos = p.getPosition();
-            //p.advance(currentTime-p.localTime); //uncomment if you want sync snapshots
-            myfile << pos[0] << " " 
-                   << pos[1] << " "
-                   << pos[2] << " ";
-            pos = p.getCurrentPosition(sim.getCurrentTime()-p.getLocalTime());
-            myfile << pos[0] << " " 
-                   << pos[1] << " "
-                   << pos[2] << std::endl;
-        }
-        myfile.close();
-        sim.queueFunction(0, sim.getCurrentTime()+period);
-        count++;
-    }    
+        std::cout << "Particle collision Post" << std::endl;
+    }
+    
+    void fEndOfSimulation(Simulation<3>& sim)
+    {
+        sim.data.output(sim);
+    }
     
 private:
 

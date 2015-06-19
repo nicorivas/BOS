@@ -175,19 +175,19 @@ std::ostream& operator<<(std::ostream& os, Particle<DIM> p) {
 * This function is potentially evil. Only call this on events ACTUALLY within a particle.
 * @return 
 */
-template<unsigned int DIM>
-Particle<DIM>* Event::getParticle() {
-   return (Particle<DIM>*)(((char*)this) - offsetof(Particle<DIM>,nextEvent));
-}
+//template<unsigned int DIM>
+//Particle<DIM>* Event::getParticle() {
+//   return (Particle<DIM>*)(((char*)this) - offsetof(Particle<DIM>,nextEvent));
+//}
 
 /**
 * This function is potentially evil. Only call this on events ACTUALLY within a particle.
 * @return 
 */
-template<unsigned int DIM>
-const Particle<DIM> * Event::getParticle() const {
-   return (const Particle<DIM>*)(((char*)this) - offsetof(Particle<DIM>,nextEvent));
-}
+//template<unsigned int DIM>
+//const Particle<DIM> * Event::getParticle() const {
+//   return (const Particle<DIM>*)(((char*)this) - offsetof(Particle<DIM>,nextEvent));
+//}
 
 #endif	/* PARTICLE_H */
 

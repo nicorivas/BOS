@@ -14,22 +14,16 @@
 #include <physics/Wall.h>
 #include <physics/Grid.h>
 #include <input/Data.h>
-#include <funcs/FunctionEvent.h>
+#include <funcs/FunctionalEvent.h>
 
 #include <PriorityQueue.h>
 
-#include <chrono>
 #include <vector>
 #include <functional>
-//#include <queue>
 #include <set>
-//#include <fstream>
-//#include <sstream>
 #include <string>
 #include <cstdio>
 
-
-#define EVT_PROFILE_COUNT 100000
 
 template < unsigned int DIM >
 class Simulation
@@ -39,11 +33,13 @@ public:
 private:
     std::vector< Particle<DIM> > particles;
     std::vector< Wall<DIM> > walls;
+    
     std::vector< std::function<void(Simulation<DIM>&)> > fEvents_Event;
     std::vector< std::function<void(Simulation<DIM>&)> > fEvents_WallPre;
     std::vector< std::function<void(Simulation<DIM>&)> > fEvents_WallPost;
     std::vector< std::function<void(Simulation<DIM>&)> > fEvents_ParticlePre;
     std::vector< std::function<void(Simulation<DIM>&)> > fEvents_ParticlePost;
+    std::vector< std::function<void(Simulation<DIM>&)> > fEvents_EndOfSimulation;
 
     Grid<DIM> grid;
 
@@ -61,7 +57,7 @@ private:
     std::set<Event*> unownedEvents;
 public:
     
-    // Should we make this public?
+    // Should this be public?
     Data<3> data;
     
     /**
@@ -70,8 +66,11 @@ public:
     Simulation(const std::string& file) : data(file, *this)
     {
         syncEvent= Event(data.syncTime, 0, 0, EventType::SYNC);
-        endTime = data.endTime;
+        endTime = data.timeEnd;
+        eventNumber = data.eventCount;
+        eventNumberLimit = data.eventCountEnd;
         globalTime = 0;
+        currentTime = 0;
         createGrid({0.0,0.0,0.0},
         {data.domain[0],data.domain[1],data.domain[2]},
         {data.particleRadius*2.0,data.particleRadius*2.0,data.particleRadius*2.0});
@@ -122,22 +121,29 @@ public:
         wallCollision = func;
     }
     
-    std::size_t addFunctionEvent(const FunctionEvent fe)
+    void addFunctionalEvent(const FunctionalEvent fe)
     {
         // Add functional events:
-        std::size_t idx = fEvents_Event.size();
-        fEvents_Event.emplace_back(fe.functionEventP_Event);
-        queueFunction(idx, 10.0);
-        
-        if (fe.doWallCollisionPre)
-            fEvents_WallPre.emplace_back(fe.functionEventP_WallPre);
-        if (fe.doWallCollisionPost)
-            fEvents_WallPost.emplace_back(fe.functionEventP_WallPost);
-        if (fe.doParticleCollisionPre)
-            fEvents_ParticlePre.emplace_back(fe.functionEventP_ParticlePre);
-        if (fe.doParticleCollisionPost)
-            fEvents_ParticlePost.emplace_back(fe.functionEventP_ParticlePost);
-        return idx;
+        if (fe.doEvent) {
+            std::size_t idx = fEvents_Event.size();
+            fEvents_Event.emplace_back(fe.funcProxy_Event);
+            queueFunction(idx, fe.getTime());
+        }
+        if (fe.doWallPre) {
+            fEvents_WallPre.emplace_back(fe.funcProxy_WallPre);
+        }
+        if (fe.doWallPost) {
+            fEvents_WallPost.emplace_back(fe.funcProxy_WallPost);
+        }
+        if (fe.doParticlePre) {
+            fEvents_ParticlePre.emplace_back(fe.funcProxy_ParticlePre);
+        }
+        if (fe.doParticlePost) {
+            fEvents_ParticlePost.emplace_back(fe.funcProxy_ParticlePost);
+        }
+        if (fe.doEndOfSimulation) {
+            fEvents_EndOfSimulation.emplace_back(fe.funcProxy_EndOfSimulation);
+        }
     }
     
     std::size_t addFunction(const std::function<void(Simulation&)>& func)
@@ -199,7 +205,6 @@ public:
 
     void addWall(Wall<DIM> wall)
     {
-        std::cout << wall << std::endl;
         walls.push_back(wall);
     }
     
@@ -226,7 +231,8 @@ public:
     {
         initialPopulateEvents();
         
-        eventNumber = 0;
+        std::cout << globalTime << std::endl;
+        std::cout << currentTime << std::endl;
         
         while (globalTime < endTime && eventNumber < eventNumberLimit)
         {          
@@ -250,12 +256,16 @@ public:
             
             eventNumber++;
         }
+        
+        for (auto fe : fEvents_EndOfSimulation)
+            fe(*this);
+        
         return 0;
     }
     
     void handler(Event* evt) 
     {   
-        //std::cout << "\n*** (" << eventCount << ") " << *evt << std::endl;
+        std::cout << "\n*** (" << data.eventCount << ") " << *evt << std::endl;
         switch (evt->type)
         {
             case EventType::PARTICLE_COLLISION:
@@ -286,8 +296,8 @@ public:
                 break;
             case EventType::WALL_COLLISION:
             {
+                Particle<DIM>& p = particles[evt->ownerId];
                 Wall<DIM>& w = walls[evt->otherId];
-                Particle<DIM>& p = *(evt->getParticle<DIM>());
 
                 p.advance(evt->time-p.localTime);
                 globalTime += evt->time-currentTime;
@@ -307,14 +317,15 @@ public:
                 break;
             case EventType::CELL_BOUNDARY:
             {
-                Particle<DIM>& p = *(evt->getParticle<DIM>());
+                Particle<DIM>& p = particles[evt->ownerId];
+                //Particle<DIM>& p = *(evt->getParticle<DIM>());
 
                 // I don't think this is necessary, we should try when
                 // the code is stable. As velocity doesn't change,
                 // collisions will anyway be correctly predicted.
                 p.advance(evt->time-p.localTime);
 
-                grid.moveParticle(evt);
+                grid.moveParticle(p, evt->otherId);
                 globalTime += evt->time-currentTime;
                 currentTime = evt->time;
 
@@ -326,11 +337,14 @@ public:
             {
                 synchronise(evt->time);
                 syncEvent.time += data.syncTime;
+                globalTime += evt->time-currentTime;
                 eventQueue.push(&syncEvent);
             }   
                 break;
             case EventType::FUNCTION:
             {
+                globalTime += evt->time-currentTime;
+                currentTime = evt->time;
                 fEvents_Event[evt->otherId](*this);
                 unownedEvents.erase(evt);
                 delete evt;
@@ -348,9 +362,6 @@ public:
 private:
     
     void createGrid(Vector<DIM> domainOrigin, Vector<DIM> domainEnd, Vector<DIM> cellSize) {
-        std::cout << domainOrigin << std::endl;
-        std::cout << domainEnd << std::endl;
-        std::cout << cellSize << std::endl;
         grid = Grid<DIM>(domainOrigin, domainEnd, cellSize);
         grid.init(&particles);
     }
@@ -442,89 +453,14 @@ private:
                 //std::cout << "\t* PREDICTED * " << evt << std::endl;
             }
         }
-        /*
-        if (found)
-        {
-            Particle<DIM>& p2 = particles[evt.otherId];
-            
-            //std::cout << "\t p2="<<p2<<std::endl;
-            
-            // See if the other particle already has a collision scheduled,
-            // then we need to cancel that one
-            if (p2.getNextEvent().type == EventType::PARTICLE_COLLISION)
-            {
-                std::cout << "\tCONFLICT OF PARTICLE COLLISION EVENTS" << std::endl;
-                std::cout << "\tevt=" << evt << std::endl;
-                std::cout << "\tp2.getNextEvent()=" << p2.getNextEvent() << std::endl;
-                if (p1.getID() == p2.getNextEvent().otherId &&
-                        fabs(evt.time - p2.getNextEvent().time) < std::numeric_limits<double>::epsilon()*10 &&
-                        evt.type == p2.getNextEvent().type)
-                {
-                    std::cout << "\tEvent was actually the same one" << std::endl;
-                    // It's the same event, leave the one with the lower ID.
-                    if (evt.otherId > p2.id)
-                    {
-                        Event * tmp = &p2.getNextEvent();
-                        eventQueue.erase(tmp);
-                        p2.setNextEvent({});
-                        p1.setNextEvent(evt);
-                        return p1.getNextEvent();
-                    }
-                    else
-                    {
-                        Event * tmp = &p2.getNextEvent();
-                        eventQueue.erase(tmp);
-                        return p2.getNextEvent();
-                    }
-                }
-                else
-                {
-                    std::cout << "Crazy shit" << std::endl;
-                    Particle<DIM>& cancelledPartner = particles[p2.getNextEvent().otherId];
-
-                    //Which event was on the queue? (answer: smallest ID)
-                    Event* pEvent = (p2.getID() < cancelledPartner.getID())
-                            ? &p2.getNextEvent() : &cancelledPartner.getNextEvent();
-
-                    //BOOM! GONE!
-                    eventQueue.erase(pEvent);
-                
-                    p1.setNextEvent(evt);
-                    evt.ownerId = p2.getID();
-                    evt.otherId = p1.getID();
-                    p2.setNextEvent(evt);
-
-                    cancelledPartner.setNextEvent({});
-
-                    findNextEvent(cancelledPartner);
-                }
-            }
-            else
-            {
-                p1.setNextEvent(evt);
-                if (p2.getNextEvent().type != EventType::INVALID)
-                    eventQueue.erase(&p2.getNextEvent());
-                evt.ownerId = p2.getID();
-                evt.otherId = p1.getID();
-                p2.setNextEvent(evt);
-            }
-
-            if (p1.getID() < p2.getID())
-            {
-                return p1.getNextEvent();
-            }
-            else
-            {
-                return p2.getNextEvent();
-            }
-        }
-        */
+        
         return p1.getNextEvent();
     }
 
     void findNextEvent(Particle<DIM>& p) {
         //std::cout << "void findNextEvent(p.getID()="<<p.getID()<<")" << std::endl;
-        // See comment on initialPopulateEvents().
+        // Pointer here, as the actual event is contained by the particles,
+        // and the queue only contains the pointers.
         Event * evt;
         evt = &findWallCollisions(p);
         evt = &findCellCollisions(p);
@@ -534,19 +470,10 @@ private:
     }
     
     void initialPopulateEvents() {
-        // Pointer here, as the actual event is contained by the particles,
-        // and the queue only contains the pointers.
-        //Event * evt;
         for (std::size_t i = 0; i < particles.size(); i++)
         {
             Particle<DIM>& p = particles[i];
             findNextEvent(p);
-            /*
-            evt = &findWallCollisions(p);
-            evt = &findCellCollisions(p);
-            evt = &findParticleCollisions(p);
-            eventQueue.push(evt);
-            */
         }
         // Other events
         eventQueue.push(&syncEvent);

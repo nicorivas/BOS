@@ -11,8 +11,8 @@
 void particleElastic(Particle<3>& pA, Particle<3>& pB)
 {
     Vector<3> d = pA.getPosition() - pB.getPosition();
-    d /= sqrt(dot(d, d)); //normalise
     Vector<3> v = pA.getVelocity() - pB.getVelocity();
+    d /= sqrt(dot(d, d)); //normalise
     pA.setVelocity(pA.getVelocity() - d * dot(v, d));
     pB.setVelocity(pB.getVelocity() + d * dot(v, d));
 }
