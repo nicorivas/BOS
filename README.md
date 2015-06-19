@@ -4,7 +4,7 @@ Balls of steel (BOS) is an event-driven, hard-particles discrete particle method
 BoS aims to be a minimal, extremely fast but easily extendable version of an even-driven (ED) simulator.
 It is currently in initial development.
 
-## Instalation
+## Installation
 
 Use cmake to create makefiles. Then just 'make'.
 
