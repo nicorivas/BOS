@@ -8,8 +8,11 @@
 #ifndef DATA_H
 #define	DATA_H
 
+#include "rapidjson/prettywriter.h" // for stringify JSON
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/document.h>
+
+#include <physics/Models.h>
 
 #include <sstream>
 #include <fstream>
@@ -22,95 +25,120 @@ class Simulation;
 template<unsigned int DIM>
 class Data {
 public:
+    const std::string filename;
+    rapidjson::Document docJson;
+    
     Vector<DIM> domain;     // Vector with domain limits, for the grid
     int particleNumber;     // Total number of particles
     double particleRadius;  // Radii of the spherical (or disk) particles
     double syncTime;        // Period to call sync (see comments in sync funct.)
-    double endTime;         // Total time of the simulation
-    rapidjson::Document docJson;
-    Data(const std::string& file, Simulation<DIM>& sim)
+    
+    double timeEnd;         // Total time of the simulation
+    int eventCount;        // Count of number of events called
+    int eventCountEnd;   // Number of events at which the simulation should stop
+    
+    int outputCount;            // Times output has been called, for the filename
+    std::string outputFilename; // Filename for output files
+    
+    Data(const std::string& filename, Simulation<DIM>& sim) :
+            filename(filename)
     {
         using namespace rapidjson;
         std::stringstream sstr;
 
         // We read the file to a string.
-        std::ifstream in(file.c_str());
+        std::ifstream in(filename.c_str());
         sstr << in.rdbuf();
         docJson.Parse(sstr.str().c_str());
-
-        assert(docJson.HasMember("particleNumber"));
-        particleNumber = docJson["particleNumber"].GetInt();
         
-        assert(docJson.HasMember("particleRadius"));
-        particleRadius = docJson["particleRadius"].GetDouble();
+        // First we check if filetype is DEMDF.
+        std::cout << docJson["fileFormat"].GetString() << std::endl;
+        if (!(std::string(docJson["fileFormat"].GetString()) == "demdf")) {
+            std::cerr << "Data format in " << filename << "is not 'demdf'";
+            exit(0);
+        };
         
-        assert(docJson.HasMember("length"));
-        const Value& lengthJson = docJson["length"];
+        timeEnd = docJson["timeEnd"].GetDouble();
+        eventCount = docJson["eventCount"].GetInt();
+        eventCountEnd = docJson["eventCountEnd"].GetInt();
+        syncTime = 10000.0;
+        
+        const Value& jDomain = docJson["domain"];
         for (size_t d = 0; d < DIM; d++) {
-            domain[d] = lengthJson[d].GetDouble();
+            domain[d] = jDomain[1][d].GetDouble();
         }
-        std::cout << domain << std::endl;
 
-        assert(docJson.HasMember("boundaries"));
-        const Value& boundariesJson = docJson["boundaries"];
-        assert(boundariesJson.IsArray());
-        for (SizeType i = 0; i < boundariesJson.Size(); i++) {// Uses SizeType instead of size_t
+        assert(docJson.HasMember("walls"));
+        const Value& jWalls = docJson["walls"];
+        for (SizeType w = 0; w < jWalls.Size(); w++) {// Uses SizeType instead of size_t
             Vector<DIM> normal;
             Vector<DIM> position;
             for (size_t d = 0; d < DIM; d++) {
-                normal[d] = boundariesJson[i]["normal"][d].GetDouble();
-                position[d] = boundariesJson[i]["position"][d].GetDouble();
+                normal[d] = jWalls[w]["normal"][d].GetDouble();
+                position[d] = jWalls[w]["point"][d].GetDouble();
             }
             sim.addWall({position,normal});
         }
         
-        assert(docJson.HasMember("config"));
-        
-        syncTime = 10000.0;
-        endTime = 100.0;
+        // Adding physical models.
+        sim.setParticleCollisionModel(particleElastic);
+        sim.setWallCollisionModel(wallElastic);
+        /* Models could also be defined as lambda functions, as:
+        sim.setParticleCollisionModel([&](Particle<3>& pA, Particle<3>& pB) {
+            Vector<3> d = pA.getPosition() - pB.getPosition();
+            d /= sqrt(dot(d, d)); //normalise
+            Vector<3> v = pA.getVelocity() - pB.getVelocity();
+            pA.setVelocity(pA.getVelocity() - d * dot(v, d));
+            pB.setVelocity(pB.getVelocity() + d * dot(v, d));
+        });
+        */
         
         config(sim);
     }
     
-    void config(Simulation<DIM>& sim) {
-        std::mt19937_64 gen(1);
-        std::uniform_real_distribution<double> randDist(-1,1);
-        double radius = particleRadius;
-        int n = 0;
-        int i = 0, j = 0, k = 0;
-        double px, py, pz;
-        double spacing = 0.03;
-        while (n < particleNumber) {
-            px = radius+spacing+2*(radius+spacing)*i;
-            py = radius+spacing+2*(radius+spacing)*j;
-            pz = radius+spacing+2*(radius+spacing)*k;
-            //std::cout << px << " " << py << " " << pz << std::endl;
-            i++;
-            if (px+radius+spacing > domain[0]) {
-                i = 0;
-                j++;
-                continue;
-            }
-            if (py+radius+spacing > domain[1]) {
-                i = 0;
-                j = 0;
-                k++;
-                continue;
-            }
-            if (pz+radius+spacing > domain[2]) {
-                std::cerr << "Particle don't fit inside walls" << std::endl;
-                exit(1);
-            }
-            //sim.addParticle({{px, py, 0.75}, {randDist(gen), randDist(gen), 0.0}, radius, 0});
-            sim.addParticle({{px, py, pz}, {randDist(gen), randDist(gen), randDist(gen)}, radius, 0});
-            n++;
+    void output(Simulation<DIM>& sim)
+    {
+        rapidjson::StringBuffer buffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);        
+        rapidjson::Value& jParticles = docJson["particles"];
+        for (auto p : sim.getParticles())
+        {
+            int i = p.getID();
+            jParticles[i][0].SetDouble(p.getCurrentPosition(sim.getCurrentTime()-p.getLocalTime())[0]);
+            jParticles[i][1].SetDouble(p.getCurrentPosition(sim.getCurrentTime()-p.getLocalTime())[1]);
+            jParticles[i][2].SetDouble(p.getCurrentPosition(sim.getCurrentTime()-p.getLocalTime())[2]);
+            jParticles[i][3].SetDouble(p.getVelocity()[0]);
+            jParticles[i][4].SetDouble(p.getVelocity()[1]);
+            jParticles[i][5].SetDouble(p.getVelocity()[2]);
         }
-        //sim.addParticle({{3.2, 2.5, 2.5}, {-0.4, 0.0, 0.0}, 0.5, 0});
-        //sim.addParticle({{3.2, 3.8, 2.5}, { 0.0,-2.0, 0.0}, 0.5, 0});
-        //sim.addParticle({{1.9, 2.5, 2.5}, {+0.5, 0.0, 0.0}, 0.5, 0});
-        std::cout << "Particles added=" << sim.getParticles().size() << std::endl;
+        docJson["time"].SetDouble(sim.getCurrentTime());
+        docJson["output"][0]["saveCount"].SetInt(outputCount);
+        
+        docJson.Accept(writer);
+        std::ofstream out(outputFilename+"_"+std::to_string(outputCount)+".json");
+        out << buffer.GetString();
+        outputCount++;
     }
+    
 private:
+    
+    void config(Simulation<DIM>& sim) {
+        // Particles from JSON
+        using namespace rapidjson;
+        const Value& jParticles = docJson["particles"];
+        double px, py, pz, vx, vy, vz;
+        particleNumber = jParticles.Size();
+        particleRadius = 0.5;
+        for (size_t p = 0; p < particleNumber; p++) {
+            px = jParticles[p][0].GetDouble();
+            py = jParticles[p][1].GetDouble();
+            pz = jParticles[p][2].GetDouble();
+            vx = jParticles[p][3].GetDouble();
+            vy = jParticles[p][4].GetDouble();
+            vz = jParticles[p][5].GetDouble();
+            sim.addParticle({{px, py, pz}, {vx, vy, vz}, particleRadius});
+        }
+    }
 
 };
 

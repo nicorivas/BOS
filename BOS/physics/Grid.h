@@ -262,15 +262,14 @@ public:
     
     // Given an event of a collision of a particle with a cell boundary, 
     // change the cell to which the particle belongs to
-    int moveParticle(Event* event) {
-        
+    int moveParticle(Particle<DIM>& p, int planeId) {
         unsigned int listIndex, cellIndex;
         
         // Remove particle from the list
-        cellIndex = event->getParticle<DIM>()->getCellIndex();
+        cellIndex = p.getCellIndex();
         listIndex = cellIndex*maxParticlesPerCell;
         unsigned int c = 0;
-        while (list[listIndex+c] != event->ownerId && c < maxParticlesPerCell) {
+        while (list[listIndex+c] != p.getID() && c < maxParticlesPerCell) {
             c++;
         }
         if (c == maxParticlesPerCell) {
@@ -282,10 +281,10 @@ public:
         // Get direction of moving from wall normal
         Vector<DIM> dirs = {1.0, 1.0*nCells[0], 1.0*nCells[0]*nCells[1]};
         //std::cout << "cellIndex=" << cellIndex << std::endl;
-        cellIndex = cellIndex + (int)(dot(planes[event->otherId].getNormal(),-dirs));
+        cellIndex = cellIndex + (int)(dot(planes[planeId].getNormal(),-dirs));
         //std::cout << "cellIndex=" << cellIndex << std::endl;
         
-        event->getParticle<DIM>()->setCellIndex(cellIndex);
+        p.setCellIndex(cellIndex);
         
         // Add to list at proper position
         c = 0;
@@ -299,7 +298,7 @@ public:
             std::cerr << "A collision occurred in the list of cells" << std::endl;
             exit(0);
         }
-        list[listIndex+c] = event->ownerId;
+        list[listIndex+c] = p.getID();
         
         return 1;
     }
