@@ -8,9 +8,9 @@
 #ifndef DATA_H
 #define	DATA_H
 
-#include "rapidjson/prettywriter.h" // for stringify JSON
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/document.h>
+#include <libs/rapidjson/prettywriter.h> // for stringify JSON
+#include <libs/rapidjson/filereadstream.h>
+#include <libs/rapidjson/document.h>
 
 #include <physics/Models.h>
 
@@ -57,6 +57,9 @@ public:
             std::cerr << "Data format in " << filename << "is not 'demdf'";
             exit(0);
         };
+        
+        outputFilename = std::string(docJson["output"][0]["filename"].GetString());
+        outputCount = docJson["output"][0]["saveCount"].GetInt();
         
         timeEnd = docJson["timeEnd"].GetDouble();
         eventCount = docJson["eventCount"].GetInt();
