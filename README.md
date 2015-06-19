@@ -10,5 +10,7 @@ Use cmake to create makefiles. Then just 'make'.
 
 ## Usage
 Run as:
+
 > ./bos 'config-file'
+
 where config-file is expected to be a [DESDF](https://github.com/nicorivas/demdf) file.
