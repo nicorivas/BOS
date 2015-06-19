@@ -12,41 +12,11 @@ endif()
 include_directories( "${CMAKE_SOURCE_DIR}" )
 
 #==============================================================================
-#=========================[  HDF5 Lib  ]=======================================
-#==============================================================================
-
-#Congratulations! HDF5 will now be added.
-set( HDF5_VERSION 1.8.14 )
-
-# HDF5 install from repos is broken currently.
-# So we just include it for our and your convenience!
-ExternalProject_Add( hdf5
-   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/lib/hdf5"
-   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/hdf5-${HDF5_VERSION}
-   INSTALL_COMMAND ""
-   CMAKE_ARGS "-Wno-dev" "-DHDF5_BUILD_TOOLS=ON" "-DHDF5_BUILD_CPP_LIB=ON" "-DHDF5_BUILD_EXAMPLES=ON" "-DCMAKE_BUILD_TYPE=Release" )
-  
-include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/deps/hdf5-${HDF5_VERSION}/src" )
-include_directories( "${CMAKE_CURRENT_BINARY_DIR}/lib/hdf5/src/hdf5-build" )
-
-#==============================================================================
 #========================[  Graphical bullshit ]===============================
 #==============================================================================
 
 if (GRAPHICAL_TOOLS)
     option( FIRST_BUILD "Download + compile the glfw sources only" OFF )
-    option( VIDEO_OUTPUT "Enable video output" OFF)
-    option( MERCURY_TOOLS "Enable the awesome MercuryDPM tools which are too cool for the official MercuryDPM repo." ON )
-
-#==============================================================================
-#========================[ Video lib bullshit ]================================
-#==============================================================================
-
-    if(VIDEO_OUTPUT)
-      find_library( AVCODEC_LIBRARIES avcodec)
-      find_library( AVUTIL_LIBRARIES avutil)
-      add_definitions( -DENABLE_VIDEO )
-    endif()
 
 #==============================================================================
 #========================[ Graphics lib bullshit ]=============================
@@ -73,7 +43,6 @@ if (GRAPHICAL_TOOLS)
 #==============================================================================
        
     if(UNIX)
-	set( HDF5_LIBS ${CMAKE_CURRENT_BINARY_DIR}/lib/hdf5/src/hdf5-build/bin/libhdf5.a dl )
         if (APPLE)
             find_package( OpenGL REQUIRED )
             find_package( glew REQUIRED )
@@ -97,16 +66,10 @@ if (GRAPHICAL_TOOLS)
 #==============================================================================
 #=============[ Put bad code for executables right here ]======================
 #==============================================================================
-      add_executable( edrun main.cpp renderer/Shader.cpp  hdf5/HDF5.cpp )
-      add_executable( edgui edgui.cpp renderer/Shader.cpp )
-      add_dependencies( edrun GLFW hdf5 )
+      add_executable( bos bos.cpp )
+      add_dependencies( bos GLFW )
 
-      if ( MERCURY_TOOLS )
-        add_subdirectory( hg )
-      endif()
-
-      target_link_libraries( edrun ${UI_LIBS} ${HDF5_LIBS} )
-      target_link_libraries( edgui ${UI_LIBS} ${HDF5_LIBS} )
+      target_link_libraries( bos ${UI_LIBS} )
     endif()
 endif()
 
