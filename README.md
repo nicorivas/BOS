@@ -13,4 +13,4 @@ Run as:
 
 > ./bos 'config-file'
 
-where config-file is expected to be a [DESDF](https://github.com/nicorivas/demdf) file.
+where config-file is expected to be a [DEMDF](https://github.com/nicorivas/demdf) file.
