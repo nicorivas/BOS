@@ -16,7 +16,7 @@
 #include <input/Data.h>
 #include <funcs/FunctionalEvent.h>
 
-#include <PriorityQueue.h>
+#include <algorithm/PriorityQueue.h>
 
 #include <vector>
 #include <functional>
