@@ -10,15 +10,15 @@ Use cmake to create makefiles.
 Then just 'make'.
 It is recommended that you build in a separate directory.
 For example, from the source code parent directory:
-'''
+```
 mkdir build
 cd build
 ccmake ../
-'''
-then choose the desired ccmake options, hit g and then c. If no errors were reported,
-'''
+```
+then choose the desired cmake options, hit 'c' (maybe twice) and then 'g' to generate the makefiles. If no errors were reported, then
+```
 make
-'''
+```
 should provide you with a 'bos' executable.
 
 ## Usage
