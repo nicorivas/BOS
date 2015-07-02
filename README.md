@@ -6,7 +6,20 @@ It is currently in initial development.
 
 ## Installation
 
-Use cmake to create makefiles. Then just 'make'.
+Use cmake to create makefiles.
+Then just 'make'.
+It is recommended that you build in a separate directory.
+For example, from the source code parent directory:
+'''
+mkdir build
+cd build
+ccmake ../
+'''
+then choose the desired ccmake options, hit g and then c. If no errors were reported,
+'''
+make
+'''
+should provide you with a 'bos' executable.
 
 ## Usage
 Run as:
