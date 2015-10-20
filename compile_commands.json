@@ -1,0 +1,47 @@
+[
+{
+  "directory": "/Users/nicorivas/Software/BOS",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/bos.dir/bos.cpp.o -c /Users/nicorivas/Software/BOS/bos.cpp",
+  "file": "/Users/nicorivas/Software/BOS/bos.cpp"
+},
+{
+  "directory": "/Users/nicorivas/Software/BOS/tests",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/GridUnitTest.dir/GridUnitTest.cpp.o -c /Users/nicorivas/Software/BOS/tests/GridUnitTest.cpp",
+  "file": "/Users/nicorivas/Software/BOS/tests/GridUnitTest.cpp"
+},
+{
+  "directory": "/Users/nicorivas/Software/BOS/tests",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/IntersectionUnitTest.dir/IntersectionUnitTest.cpp.o -c /Users/nicorivas/Software/BOS/tests/IntersectionUnitTest.cpp",
+  "file": "/Users/nicorivas/Software/BOS/tests/IntersectionUnitTest.cpp"
+},
+{
+  "directory": "/Users/nicorivas/Software/BOS/tests",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/MathUnitTest.dir/MathUnitTest.cpp.o -c /Users/nicorivas/Software/BOS/tests/MathUnitTest.cpp",
+  "file": "/Users/nicorivas/Software/BOS/tests/MathUnitTest.cpp"
+},
+{
+  "directory": "/Users/nicorivas/Software/BOS/tests",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/ModelElastic.dir/ModelElastic.cpp.o -c /Users/nicorivas/Software/BOS/tests/ModelElastic.cpp",
+  "file": "/Users/nicorivas/Software/BOS/tests/ModelElastic.cpp"
+},
+{
+  "directory": "/Users/nicorivas/Software/BOS/tests",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/ModelGravity.dir/ModelGravity.cpp.o -c /Users/nicorivas/Software/BOS/tests/ModelGravity.cpp",
+  "file": "/Users/nicorivas/Software/BOS/tests/ModelGravity.cpp"
+},
+{
+  "directory": "/Users/nicorivas/Software/BOS/tests",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/ModelInelastic.dir/ModelInelastic.cpp.o -c /Users/nicorivas/Software/BOS/tests/ModelInelastic.cpp",
+  "file": "/Users/nicorivas/Software/BOS/tests/ModelInelastic.cpp"
+},
+{
+  "directory": "/Users/nicorivas/Software/BOS/tests",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/PriorityQueue.dir/PriorityQueue.cpp.o -c /Users/nicorivas/Software/BOS/tests/PriorityQueue.cpp",
+  "file": "/Users/nicorivas/Software/BOS/tests/PriorityQueue.cpp"
+},
+{
+  "directory": "/Users/nicorivas/Software/BOS/tests",
+  "command": "/usr/bin/g++    -std=c++11 -Wall -g3 -gdwarf-2 -I/Users/nicorivas/Software/BOS    -o CMakeFiles/SimulationUnitTest.dir/SimulationUnitTest.cpp.o -c /Users/nicorivas/Software/BOS/tests/SimulationUnitTest.cpp",
+  "file": "/Users/nicorivas/Software/BOS/tests/SimulationUnitTest.cpp"
+}
+]

@@ -1,0 +1,86 @@
+{
+    "fileFormat": "demdf",
+    "fileFormatVersion": 0.01,
+    "name": "Name of simulation",
+    "dimensionality": 3,
+    "time": 0.0,
+    "timeEnd": 10000,
+    "timeStep": 0.001,
+    "timeStepCount": 0,
+    "timeStepCountEnd": 1,
+    "eventCount": 0,
+    "eventCountEnd": 100000,
+    "output": {
+        "snapshot": {
+            "name": "demdf",
+            "filename": "output",
+            "saveCount": 0,
+            "savePeriodInTimeSteps": 100,
+            "savePeriodInTime": 100
+        }
+    },
+    "domain": [[0.0, 0.0, 0.0],[5.0, 5.0, 5.0]],
+    "bodyForce": [0.0, 0.0, 0.0],
+    "objectTypes": [
+        {
+            "id": 0,
+            "type": "particle",
+            "radius": 0.5,
+            "restitutionCoefficient": 0.9,
+            "mass": 1.0
+        },
+        {
+            "id": 1,
+            "type": "wall",
+            "restitutionCoefficient": 0.9
+        }
+    ],
+    "objects": {
+        "particles": [
+            [1.15, 1.12, 2.41, 1.21258601, -0.49184120, 0.8417249, 0],
+            [1.25, 2.52, 3.21, 0.73258601, -0.91164120, -0.5470249, 0]
+        ],
+        "walls": [
+            {
+                "normal": [1.0, 0.0, 0.0],
+                "point": [0.0, 0.0, 0.0],
+                "objectType": 1
+            },
+            {
+                "normal": [-1.0, 0.0, 0.0],
+                "point": [5.0, 0.0, 0.0],
+                "objectType": 1
+            },
+            {
+                "normal": [0.0, 1.0, 0.0],
+                "point": [0.0, 0.0, 0.0],
+                "objectType": 1
+            },
+            {
+                "normal": [0.0, -1.0, 0.0],
+                "point": [0.0, 5.0, 0.0],
+                "objectType": 1
+            },
+            {
+                "normal": [0.0, 0.0, 1.0],
+                "point": [0.0, 0.0, 0.0],
+                "objectType": 1
+            },
+            {
+                "normal": [0.0, 0.0, -1.0],
+                "point": [0.0, 0.0, 5.0],
+                "objectType": 1
+            }
+        ]
+    },
+    "interactions": [
+        {
+            "name": "particleInelastic",
+            "objectTypes": [0, 0]
+        },
+        {
+            "name": "wallInelastic",
+            "objectTypes": [0, 1]
+        }
+    ]
+}

@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/nicorivas/Software/BOS/tests/PriorityQueue.cpp
+algorithm/PriorityQueue.h
+-
+queue
+-
+vector
+-
+initializer_list
+-
+iostream
+-
+random
+-
+chrono
+-
+iomanip
+-
+
+algorithm/PriorityQueue.h
+vector
+-
+functional
+-
+iostream
+-
+

@@ -1,11 +1,3 @@
-/* 
- * File:   GridUnitTest.cpp
- * Author: nicorivas
- *
- * Created on May 26, 2015, 10:35 PM
- */
-
-//#include <physics/Simulation.h>
 #include <physics/Grid.h>
 #include <physics/Particle.h>
 #include <math/Vector.h>
@@ -14,11 +6,6 @@
 #include <random>
 #include <iostream>
 
-using namespace std;
-
-/*
- * 
- */
 int main(int argc, char** argv) {
 
     std::mt19937_64 gen(0);
@@ -30,10 +17,10 @@ int main(int argc, char** argv) {
     
     std::vector<Particle<3> > particles;
     
-    particles.push_back({0, {0.5, 0.5, 0.5}, {randDist(gen), randDist(gen), randDist(gen)}, 0.5, 0});
+    particles.push_back({{0.5, 0.5, 0.5}, {randDist(gen), randDist(gen), randDist(gen)}, {0, 0, 0}, 0.5, 0});
     
-    Grid<3> grid(cellSize);
-    grid.init(&domainOrigin, &domainEnd, &particles);
+    Grid<3> grid({0,0,0},{5.0,5.0,5.0},{1.0,1.0,1.0});
+    //grid.init(&domainOrigin, &domainEnd, &particles);
     
     if (grid.getCellSize() == cellSize)
         std::cout << "grid.getCellSize() OK" << std::endl;
@@ -74,7 +61,7 @@ int main(int argc, char** argv) {
             
     
     // Check if particles are correctly located
-    ci = particles[0].cellIndex;
+    ci = particles[0].getCellIndex();
     std::cout << ci << "=" << "(" <<
                 grid.getIndexCoordsFromIndex(ci)[0] << "," <<
                 grid.getIndexCoordsFromIndex(ci)[1] << "," <<

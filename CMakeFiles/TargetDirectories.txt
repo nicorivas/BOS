@@ -1,0 +1,9 @@
+/Users/nicorivas/Software/BOS/CMakeFiles/bos.dir
+/Users/nicorivas/Software/BOS/tests/CMakeFiles/IntersectionUnitTest.dir
+/Users/nicorivas/Software/BOS/tests/CMakeFiles/PriorityQueue.dir
+/Users/nicorivas/Software/BOS/tests/CMakeFiles/GridUnitTest.dir
+/Users/nicorivas/Software/BOS/tests/CMakeFiles/ModelGravity.dir
+/Users/nicorivas/Software/BOS/tests/CMakeFiles/SimulationUnitTest.dir
+/Users/nicorivas/Software/BOS/tests/CMakeFiles/ModelElastic.dir
+/Users/nicorivas/Software/BOS/tests/CMakeFiles/MathUnitTest.dir
+/Users/nicorivas/Software/BOS/tests/CMakeFiles/ModelInelastic.dir

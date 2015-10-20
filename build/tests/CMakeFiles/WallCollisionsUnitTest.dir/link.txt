@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -Wall -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/WallCollisionsUnitTest.dir/WallCollisionsUnitTest.cpp.o  -o WallCollisionsUnitTest  

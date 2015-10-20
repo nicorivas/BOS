@@ -1,17 +1,10 @@
-/* 
- * File:   Intersection.h
- * Author: dducks
- *
- * Created on April 20, 2015, 7:31 PM
- */
-
 #ifndef INTERSECTION_H
 #define	INTERSECTION_H
 
-#include "Line.h"
-#include "Plane.h"
+#include "math/Line.h"
+#include "math/Plane.h"
+#include "math/Parabola.h"
 #include <limits>
-
 
 /**
  * Returns the distance traveled on the line, to get to an intersection
@@ -54,10 +47,84 @@ double intersection(Line<DIM> l, Plane<DIM> plane, double d, double dt) {
     if (t > 0.0) {
         return t;
     } else {
-        std::cout << "line =" << l << std::endl;
-        std::cout << "line =" << l.getOrig() + l.getDir() * dt << std::endl;
-        std::cout << "plane=" << plane << std::endl;
+        //std::cout << "line =" << l << std::endl;
+        //std::cout << "line =" << l.getOrig() + l.getDir() * dt << std::endl;
+        //std::cout << "plane=" << plane << std::endl;
         return 0.0;
+    }
+}
+
+/**
+ * Returns the distance traveled on the parabola at the intersection point
+ * @param p the parabola
+ * @param plane the plane
+ * @param d the radius of the parabola (so it becomes kind of a cylinder)
+ * @return the distance to get to the intersection, viewed from the parabola
+ */
+template< unsigned int DIM >
+double intersection(Parabola<DIM> p, Plane<DIM> plane, double d, double dt) {
+    
+    // We need to solve the quadratic equation:
+    // With * dot product, parabola a + b * t + c * t^2 = x, plane n * (x - x0) = 0
+    // n * (a - x0) - d + n * b t + n * c t^2.
+    // qa t^2 + qb t + qc.
+    double qct, qa, qb, qc;
+    // Projection of the relative distance on the plane normal;
+    Vector<DIM> planeNormal = plane.getNormal();
+    qct = dot(planeNormal, p.getC()+p.getB()*dt+p.getA()*dt*dt-plane.getPoint());
+    // If the projection is negative, we are colliding from the other side, then:
+    if (qct < 0) {
+        planeNormal = -planeNormal;
+        qct = -qct;
+    }
+    //std::cout << "d=" << d << std::endl;
+    qc = qct - d;
+    qb = dot(planeNormal, p.getB());
+    qa = dot(planeNormal, p.getA());
+    //std::cout << "qc=" << qc << " qb=" << qb << " qa=" << qa << std::endl;
+    if (qa == 0) {
+        // linear equation
+        //std::cout << - qb/qc << std::endl;
+        return intersection({p.getC(), p.getB()}, plane, d, dt);
+    } else {
+        double deter = qb * qb - 4 * qa * qc;
+        if (deter < 0) return std::numeric_limits<double>::infinity();
+        else
+        {
+            double x1 = (- qb + std::sqrt(deter))/(2*qa);
+            double x2 = (- qb - std::sqrt(deter))/(2*qa);
+            //std::cout << "x1=" << x1 << " x2=" << x2 << std::endl;
+            if (qa > 0)
+            {
+                if (x1 > 0.0) {
+                    return x1;
+                } else {
+                    return 0.0;
+                }
+            }else{
+                if (x2 > 0.0) {
+                    return x2;
+                } else {
+                    return 0.0;
+                }
+            }
+        }
+        /*
+        std::cout << "\tdeter=" << deter << std::endl;
+        if (qa < 0) {
+            if (deter <= 0) return std::numeric_limits<double>::infinity();
+            if (qb > 0) {
+                std::cout << "\tqb=" << qb << std::endl;
+                return std::max(0.0, (-qb-std::sqrt(deter)/qa));
+            } else {
+                std::cout << "\tqb=" << qb << std::endl;
+                return std::max(0.0, 2 * qc/(-qb+std::sqrt(deter)));
+            }
+        } else {
+            if (qb >= 0 || deter <= 0) return std::numeric_limits<double>::infinity();
+            return std::max(0.0, 2 * qc/(-qb+std::sqrt(deter)));
+        }
+        */
     }
 }
 
@@ -78,12 +145,9 @@ double intersection(Line<DIM> l, Plane<DIM> plane, double d, double dt) {
  */
 template< unsigned int DIM >
 double intersection(Line<DIM> line, Line<DIM> otherLine, double d, double dt) {
-    //TODO: I HATE THE SQUARE ROOT!!!!!
-    //Therefore, can we work with square time instead?
-    
     // first, we translate into the frame of the first particle
-    Vector<DIM> positionRel = otherLine.getOrig() - line.getOrig() + otherLine.getDir()*dt;
-    Vector<DIM> velocityRel = otherLine.getDir()  - line.getDir();
+    Vector<DIM> positionRel = otherLine.getOrig() + otherLine.getDir()*dt - line.getOrig();
+    Vector<DIM> velocityRel = otherLine.getDir() - line.getDir();
     
     //q, = quadratic! :D So, we're solving something similar to qa*x^2 + qb*x + qc = 0;
     
@@ -105,8 +169,6 @@ double intersection(Line<DIM> line, Line<DIM> otherLine, double d, double dt) {
     //Nope! Infty!
     return std::numeric_limits<double>::infinity();
 }
-
-
 
 #endif	/* INTERSECTION_H */
 

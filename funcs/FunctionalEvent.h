@@ -1,22 +1,17 @@
-/* 
- * File:   FunctionalEvent.h
- * Author: nrivas
- *
- * Created on June 15, 2015, 14:58 AM
- */
-
 #ifndef FUNCTIONALEVENT_H
 #define	FUNCTIONALEVENT_H
 
-#include <funcs/FunctionalProxy.h>
+#include "Proxy.h"
 
 /*
  * Functional events are events that trigger function calls, either at specific
  * times or event positions. They work by defining the functions available, and
- * then the creator of functional events registers this functions in the 
+ * then the creator of functional events registers these functions in the 
  * appropriate lists in the Simulation object. See each function comment so see
- * where is this called. 
+ * where is this called. As we want to call internal class methods from the
+ * Simulation class, we use functional proxys. See FunctionalProxy.h for doc.
  */
+template<unsigned int DIM>
 class FunctionalEvent {
     
 public:
@@ -26,49 +21,76 @@ public:
     bool doWallPost;
     bool doParticlePre;
     bool doParticlePost;
+    bool doCellPre;
+    bool doCellPost;
     bool doEndOfSimulation;
+    bool doStartOfSimulation;
     
-    FunctionalEvent() : funcProxy_Event(this),
-                      funcProxy_WallPre(this),
-                      funcProxy_WallPost(this),
-                      funcProxy_ParticlePre(this),
-                      funcProxy_ParticlePost(this),
-                      funcProxy_EndOfSimulation(this),
+    FunctionalEvent() : proxyEvent(this),
+                      proxyWallPre(this),
+                      proxyWallPost(this),
+                      proxyParticlePre(this),
+                      proxyParticlePost(this),
+                      proxyCellPre(this),
+                      proxyCellPost(this),
+                      proxyEndOfSimulation(this),
+                      proxyStartOfSimulation(this),
+                      doEvent(false),
                       doWallPre(false), 
                       doWallPost(false), 
                       doParticlePre(false), 
                       doParticlePost(false),
-                      doEndOfSimulation(false) { };
+                      doCellPre(false), 
+                      doCellPost(false),
+                      doEndOfSimulation(false),
+                      doStartOfSimulation(false) { };
     
     double getTime() const {
         return time;
     }
                       
     // Called at specified 'time' as the distinct event type 'FUNCTION'
-    virtual void fEvent(Simulation<3>& sim) {};
+    virtual void event(Simulation<DIM>& sim) {};
+    
     // Called before particle-wall collisions (after updating positions but not velocities)
-    virtual void fWallPre(Simulation<3>& sim) {};
+    virtual void wallPre(Simulation<DIM>& sim) {};
+    
     // Called after particle-wall collisions
-    virtual void fWallPost(Simulation<3>& sim) {};
+    virtual void wallPost(Simulation<DIM>& sim) {};
+    
     // Called before particle-particle collisions (after updating positions but not velocities)
-    virtual void fParticlePre(Simulation<3>& sim) {};
+    virtual void particlePre(Simulation<DIM>& sim) {};
+    
     // Called after particle-particle collisions
-    virtual void fParticlePost(Simulation<3>& sim) {};
-    // Called after particle-particle collisions
-    virtual void fEndOfSimulation(Simulation<3>& sim) {};
+    virtual void particlePost(Simulation<DIM>& sim) {};
+    
+    // Called before particle-cell "collisions"
+    virtual void cellPre(Simulation<DIM>& sim) {};
+    
+    // Called after particle-cell "collisions"
+    virtual void cellPost(Simulation<DIM>& sim) {};
+    
+    // Called just after handling last event.
+    virtual void endOfSimulation(Simulation<DIM>& sim) {};
+    
+    // Called just before handling first event.
+    virtual void startOfSimulation(Simulation<DIM>& sim) {};
 
-    // Here, because it needs to be after the definition of the function.
-    FunctionProxy<FunctionalEvent, &FunctionalEvent::fEvent> funcProxy_Event;
-    FunctionProxy<FunctionalEvent, &FunctionalEvent::fWallPre> funcProxy_WallPre;
-    FunctionProxy<FunctionalEvent, &FunctionalEvent::fWallPost> funcProxy_WallPost;
-    FunctionProxy<FunctionalEvent, &FunctionalEvent::fParticlePre> funcProxy_ParticlePre;
-    FunctionProxy<FunctionalEvent, &FunctionalEvent::fParticlePost> funcProxy_ParticlePost;
-    FunctionProxy<FunctionalEvent, &FunctionalEvent::fParticlePost> funcProxy_EndOfSimulation;
+    // These here, because they need to be after the definition of the function.
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::event> proxyEvent;
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::wallPre> proxyWallPre;
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::wallPost> proxyWallPost;
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::particlePre> proxyParticlePre;
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::particlePost> proxyParticlePost;
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::cellPre> proxyCellPre;
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::cellPost> proxyCellPost;
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::endOfSimulation> proxyEndOfSimulation;
+    FunctionalEventProxy<FunctionalEvent<DIM>, &FunctionalEvent<DIM>::startOfSimulation> proxyStartOfSimulation;
     
     
 private:
 
 };
 
-#endif
+#endif	/* FUNCTIONALEVENT_H */
 

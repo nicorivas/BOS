@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
             errorCount = 0;
             precision = pow(2,n);
             std::cout << "size=" << size << " precision=" << precision << std::endl;
-            for (i = 0; i < 100000; i++) {
+            for (i = 0; i < 100; i++) {
                 std::uniform_real_distribution<double> randDir(-1,1);
                 std::uniform_real_distribution<double> randDist(0,1.0);
                 double radii = randDist(gen);
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
                 int j;
                 int good = 0;
                 for (j = 0; j < 6; j++) {
-                    double t = intersection(line, box[j], radii, 0.0);
+                    double t = intersection<3>(line, box[j], radii, 0.0);
                     Vector<3> pointOfIntersection = line(t);
                     Vector<3> sizeDirectional({radii,radii,radii});
                     sizeDirectional = ewise(sizeDirectional, -box[j].getNormal());

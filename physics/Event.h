@@ -1,10 +1,3 @@
-/* 
- * File:   Event.h
- * Author: dducks
- *
- * Created on April 21, 2015, 1:57 PM
- */
-
 #ifndef EVENT_H
 #define	EVENT_H
 

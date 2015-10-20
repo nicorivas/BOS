@@ -14,24 +14,18 @@ include_directories( "${CMAKE_SOURCE_DIR}" )
 #======================[ What do we link against? ]============================
 #==============================================================================
        
-    if(UNIX)
-        if (APPLE)
-            set( UI_LIBS )
-        else()
-            set( pthread )
-        endif()
-   else()
-        message( ERROR "You seem to be using Windows. Ain't nobody got time fo that!" )
-   endif()
+if(UNIX)
+    if (APPLE)
+        set( UI_LIBS )
+    else()
+        set( pthread )
+    endif()
+else()
+    message( ERROR "You seem to be using Windows. Ain't nobody got time fo that!" )
+endif()
 
-#   if (NOT ${FIRST_BUILD})
-      add_executable( bos bos.cpp )
-      target_link_libraries( bos ${UI_LIBS} )
-#   endif()
-
-#==============================================================================
-#================[ And code for awesome tests here ]=======================
-#==============================================================================
+add_executable( bos bos.cpp )
+target_link_libraries( bos ${UI_LIBS} )
 
 if (TESTING_ENABLED)
   enable_testing()

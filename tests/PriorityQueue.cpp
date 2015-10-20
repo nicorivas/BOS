@@ -1,5 +1,5 @@
 #define DEBUG_MODE
-#include <PriorityQueue.h>
+#include <algorithm/PriorityQueue.h>
 #undef DEBUG_MODE
 #include <queue>
 #include <vector>

@@ -1,0 +1,1 @@
+/usr/bin/g++   -std=c++11 -Wall -g3 -gdwarf-2 -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/ModelElastic.dir/ModelElastic.cpp.o  -o ModelElastic  

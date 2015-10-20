@@ -1,0 +1,423 @@
+Start testing: Aug 02 12:17 CEST
+----------------------------------------------------------
+1/8 Testing: PriorityQueue
+1/8 Test: PriorityQueue
+Command: "/Users/nicorivas/Software/BOS/tests/PriorityQueue"
+Directory: /Users/nicorivas/Software/BOS/tests
+"PriorityQueue" start time: Aug 02 12:17 CEST
+Output:
+----------------------------------------------------------
+
+21
+17
+7
+13
+9
+2
+5
+0
+3
+0
+
+
+0	21	21
+1	17	17
+2	13	13
+3	9	9
+4	7	7
+5	5	5
+6	3	3
+7	2	2
+8	0	0
+9	0	0
+7
+5
+3
+0
+4
+
+
+7
+5
+4
+0
+
+
+Starting speed test.
+Timing report:
+     Insertion:	    Deletion:	    Total:
+A:        222ms	      1675ms	      1897ms
+B:        144ms	      1336ms	      1480ms
+
+<end of output>
+Test time =   3.73 sec
+----------------------------------------------------------
+Test Passed.
+"PriorityQueue" end time: Aug 02 12:17 CEST
+"PriorityQueue" time elapsed: 00:00:03
+----------------------------------------------------------
+
+2/8 Testing: MathUnitTest
+2/8 Test: MathUnitTest
+Command: "/Users/nicorivas/Software/BOS/tests/MathUnitTest"
+Directory: /Users/nicorivas/Software/BOS/tests
+"MathUnitTest" start time: Aug 02 12:17 CEST
+Output:
+----------------------------------------------------------
+1 0 0 0 
+0 1 0 0 
+0 0 1 0 
+0 0 0 1 
+
+2 0 0 0 
+0 2 0 0 
+0 0 2 0 
+0 0 0 2 
+
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+
+1 2 
+3 4 
+5 6 
+7 8 
+
+1 2 
+3 4 
+5 6 
+7 8 
+
+1 2 3 
+4 5 6 
+
+9 12 15 
+19 26 33 
+29 40 51 
+39 54 69 
+
+1 0 0 
+0 1 0 
+0 0 1 
+
+(2,3,4)
+
+(2,3,4)
+
+<end of output>
+Test time =   0.09 sec
+----------------------------------------------------------
+Test Passed.
+"MathUnitTest" end time: Aug 02 12:17 CEST
+"MathUnitTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/8 Testing: GridUnitTest
+3/8 Test: GridUnitTest
+Command: "/Users/nicorivas/Software/BOS/tests/GridUnitTest"
+Directory: /Users/nicorivas/Software/BOS/tests
+"GridUnitTest" start time: Aug 02 12:17 CEST
+Output:
+----------------------------------------------------------
+grid.getCellSize() OK
+grid.getNCells() = (2332308448,32767,1769179669)
+grid.getNCells(n) = (2332308448,32767,1769179669)
+<end of output>
+Test time =   0.70 sec
+----------------------------------------------------------
+Test Failed.
+"GridUnitTest" end time: Aug 02 12:17 CEST
+"GridUnitTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/8 Testing: IntersectionUnitTest
+4/8 Test: IntersectionUnitTest
+Command: "/Users/nicorivas/Software/BOS/tests/IntersectionUnitTest"
+Directory: /Users/nicorivas/Software/BOS/tests
+"IntersectionUnitTest" start time: Aug 02 12:17 CEST
+Output:
+----------------------------------------------------------
+size=4 precision=1
+size=4 precision=2
+size=4 precision=4
+size=4 precision=8
+size=4 precision=16
+size=4 precision=32
+size=4 precision=64
+size=4 precision=128
+size=4 precision=256
+size=4 precision=512
+size=4 precision=1024
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+size=8 precision=1
+size=8 precision=2
+size=8 precision=4
+size=8 precision=8
+size=8 precision=16
+size=8 precision=32
+size=8 precision=64
+size=8 precision=128
+size=8 precision=256
+size=8 precision=512
+size=8 precision=1024
+3
+1
+0
+0
+0
+0
+0
+0
+0
+0
+0
+size=16 precision=1
+size=16 precision=2
+size=16 precision=4
+size=16 precision=8
+size=16 precision=16
+size=16 precision=32
+size=16 precision=64
+size=16 precision=128
+size=16 precision=256
+size=16 precision=512
+size=16 precision=1024
+6
+6
+0
+0
+0
+0
+0
+0
+0
+0
+0
+size=32 precision=1
+size=32 precision=2
+size=32 precision=4
+size=32 precision=8
+size=32 precision=16
+size=32 precision=32
+size=32 precision=64
+size=32 precision=128
+size=32 precision=256
+size=32 precision=512
+size=32 precision=1024
+24
+9
+9
+2
+0
+0
+0
+0
+0
+0
+0
+size=64 precision=1
+size=64 precision=2
+size=64 precision=4
+size=64 precision=8
+size=64 precision=16
+size=64 precision=32
+size=64 precision=64
+size=64 precision=128
+size=64 precision=256
+size=64 precision=512
+size=64 precision=1024
+29
+17
+20
+6
+2
+0
+0
+0
+0
+0
+0
+size=128 precision=1
+size=128 precision=2
+size=128 precision=4
+size=128 precision=8
+size=128 precision=16
+size=128 precision=32
+size=128 precision=64
+size=128 precision=128
+size=128 precision=256
+size=128 precision=512
+size=128 precision=1024
+29
+34
+15
+5
+6
+4
+0
+0
+0
+0
+0
+size=256 precision=1
+size=256 precision=2
+size=256 precision=4
+size=256 precision=8
+size=256 precision=16
+size=256 precision=32
+size=256 precision=64
+size=256 precision=128
+size=256 precision=256
+size=256 precision=512
+size=256 precision=1024
+36
+32
+35
+23
+11
+4
+1
+0
+0
+0
+0
+size=512 precision=1
+size=512 precision=2
+size=512 precision=4
+size=512 precision=8
+size=512 precision=16
+size=512 precision=32
+size=512 precision=64
+size=512 precision=128
+size=512 precision=256
+size=512 precision=512
+size=512 precision=1024
+39
+47
+20
+30
+19
+6
+7
+1
+0
+0
+0
+size=1024 precision=1
+size=1024 precision=2
+size=1024 precision=4
+size=1024 precision=8
+size=1024 precision=16
+size=1024 precision=32
+size=1024 precision=64
+size=1024 precision=128
+size=1024 precision=256
+size=1024 precision=512
+size=1024 precision=1024
+48
+53
+47
+27
+29
+18
+15
+5
+4
+0
+0
+<end of output>
+Test time =   0.21 sec
+----------------------------------------------------------
+Test Passed.
+"IntersectionUnitTest" end time: Aug 02 12:17 CEST
+"IntersectionUnitTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/8 Testing: SimulationUnitTest
+5/8 Test: SimulationUnitTest
+Command: "/Users/nicorivas/Software/BOS/tests/SimulationUnitTest"
+Directory: /Users/nicorivas/Software/BOS/tests
+"SimulationUnitTest" start time: Aug 02 12:17 CEST
+Output:
+----------------------------------------------------------
+Null string passed as config filename
+Reading config file 'a'
+File was not open, probably wrong filename given: 'a'
+Error creating 'Data' class
+<end of output>
+Test time =   0.12 sec
+----------------------------------------------------------
+Test Passed.
+"SimulationUnitTest" end time: Aug 02 12:17 CEST
+"SimulationUnitTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/8 Testing: ModelElastic
+6/8 Test: ModelElastic
+Command: "/Users/nicorivas/Software/BOS/tests/ModelElastic"
+Directory: /Users/nicorivas/Software/BOS/tests
+"ModelElastic" start time: Aug 02 12:17 CEST
+Output:
+----------------------------------------------------------
+Reading config file 'test_elastic_1p.json'
+TEST ONE PARTICLE ELASTIC: GOOD
+Reading config file 'test_elastic_2p.json'
+TEST TWO PARTICLES ELASTIC: GOOD
+Reading config file 'test_elastic_100p.json'
+Reading external config file for particles 'config_100p.json'
+TEST 100 PARTICLES ELASTIC: GOOD
+<end of output>
+Test time =   8.63 sec
+----------------------------------------------------------
+Test Passed.
+"ModelElastic" end time: Aug 02 12:17 CEST
+"ModelElastic" time elapsed: 00:00:08
+----------------------------------------------------------
+
+7/8 Testing: ModelInelastic
+7/8 Test: ModelInelastic
+Command: "/Users/nicorivas/Software/BOS/tests/ModelInelastic"
+Directory: /Users/nicorivas/Software/BOS/tests
+"ModelInelastic" start time: Aug 02 12:17 CEST
+Output:
+----------------------------------------------------------
+Reading config file 'test_inelastic_1p.json'
+Reading config file 'test_inelastic_2p.json'
+Reading config file 'test_inelastic_100p.json'
+Reading external config file for particles 'config_100p.json'
+<end of output>
+Test time =   0.56 sec
+----------------------------------------------------------
+Test Passed.
+"ModelInelastic" end time: Aug 02 12:17 CEST
+"ModelInelastic" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/8 Testing: ModelGravity
+8/8 Test: ModelGravity
+Command: "/Users/nicorivas/Software/BOS/tests/ModelGravity"
+Directory: /Users/nicorivas/Software/BOS/tests
+"ModelGravity" start time: Aug 02 12:17 CEST
+Output:
+----------------------------------------------------------
+Reading config file 'test_elastic_gravity_1p.json'
+Invalid event: Event {t=I t=inf}
+<end of output>
+Test time =   0.09 sec
+----------------------------------------------------------
+Test Passed.
+"ModelGravity" end time: Aug 02 12:17 CEST
+"ModelGravity" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Aug 02 12:17 CEST
